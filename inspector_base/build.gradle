@@ -1,0 +1,13 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
+
+publishedGroupId = "inspector_base"
+publishedGroupId="osp.leobert.android"
+apply from: "../maven_publish.gradle"
+apply from: "../bintray_publish.gradle"
