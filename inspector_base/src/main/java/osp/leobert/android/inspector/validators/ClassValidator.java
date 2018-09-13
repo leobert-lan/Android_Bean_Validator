@@ -1,0 +1,236 @@
+package osp.leobert.android.inspector.validators;
+
+import com.sun.istack.internal.Nullable;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import osp.leobert.android.inspector.ClassFactory;
+import osp.leobert.android.inspector.Inspector;
+import osp.leobert.android.inspector.Types;
+import osp.leobert.android.inspector.Util;
+import osp.leobert.android.inspector.ValidationException;
+import osp.leobert.android.inspector.notations.InspectorIgnored;
+import osp.leobert.android.inspector.notations.ValidatedBy;
+
+/**
+ * Emits a validator that validates validatable methods of a class.
+ * <p>
+ * <h3>Platform Types</h3>
+ * Fields from platform classes are omitted from both serialization and deserialization unless
+ * they are either public or protected. This includes the following packages and their subpackages:
+ * <p>
+ * <ul>
+ * <li>android.*
+ * <li>java.*
+ * <li>javax.*
+ * <li>kotlin.*
+ * <li>scala.*
+ * </ul>
+ */
+public final class ClassValidator<T> extends AbsValidator<T> {
+    public static final AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+        @Override
+        public @Nullable
+        AbsValidator<?> create(Type type,
+                               Set<? extends Annotation> annotations,
+                               Inspector inspector) {
+            Class<?> rawType = Types.getRawType(type);
+            if (rawType.isInterface() || rawType.isEnum()) return null;
+            if (isPlatformType(rawType) && !Types.isAllowedPlatformType(rawType)) {
+                throw new IllegalArgumentException("Platform "
+                        + type
+                        + " annotated "
+                        + annotations
+                        + " requires explicit Validator to be registered");
+            }
+            if (!annotations.isEmpty()) return null;
+
+            if (rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers())) {
+                if (rawType.getSimpleName()
+                        .isEmpty()) {
+                    throw new IllegalArgumentException("Cannot validate anonymous class "
+                            + rawType.getName());
+                } else {
+                    throw new IllegalArgumentException("Cannot validate non-static nested class "
+                            + rawType.getName());
+                }
+            }
+            if (Modifier.isAbstract(rawType.getModifiers())) {
+                throw new IllegalArgumentException("Cannot validate abstract class " + rawType.getName());
+            }
+
+            ClassFactory<Object> classFactory = ClassFactory.get(rawType);
+            Map<String, MethodBinding<?>> methods = new TreeMap<>();
+            for (Type t = type; t != Object.class; t = Types.getGenericSuperclass(t)) {
+                createMethodBindings(inspector, t, methods);
+            }
+            return new ClassValidator<>(classFactory, methods).nullSafe();
+        }
+
+        /** Creates a method binding for each of declared method of {@code type}. */
+        @SuppressWarnings("ClassNewInstance")
+        private void createMethodBindings(Inspector inspector,
+                                          Type type,
+                                          Map<String, MethodBinding<?>> methodBindings) {
+            Class<?> rawType = Types.getRawType(type);
+            boolean platformType = isPlatformType(rawType);
+            for (final Method method : rawType.getDeclaredMethods()) {
+                if (!includeMethod(platformType, method.getModifiers())) continue;
+                if (method.getParameterTypes().length != 0) continue;
+                if (method.getAnnotation(InspectorIgnored.class) != null) continue;
+
+                // Look up a type validator for this type.
+                Type returnType = Types.resolve(type, rawType, method.getGenericReturnType());
+                Set<? extends Annotation> annotations = Util.validationAnnotations(method);
+                AbsValidator<Object> validator;
+                ValidatedBy validatedBy = method.getAnnotation(ValidatedBy.class);
+                if (validatedBy != null) {
+                    Class<? extends AbsValidator<?>>[] validatorClasses = validatedBy.value();
+                    if (validatorClasses.length == 0) {
+                        throw new IllegalArgumentException(
+                                "No validators specified in @ValidatedBy annotation on type "
+                                        + returnType
+                                        + "#"
+                                        + method.getName());
+                    }
+                    try {
+                        if (validatorClasses.length == 1) {
+                            //noinspection unchecked
+                            validator = (AbsValidator<Object>) validatorClasses[0].newInstance();
+                        } else {
+                            AbsValidator[] validators = new AbsValidator[validatorClasses.length];
+                            for (int i = 0; i < validatorClasses.length; i++) {
+                                Class<? extends AbsValidator<?>> clazz = validatorClasses[i];
+                                validators[i] = clazz.newInstance();
+                            }
+                            //noinspection unchecked
+                            validator = CompositeValidator.of(validators);
+                        }
+                    } catch (InstantiationException e) {
+                        throw new RuntimeException("Could not instantiate delegate validators "
+                                + Arrays.toString(validatedBy.value())
+                                + " for "
+                                + method.getName()
+                                + ". Make sure they have public default constructors.");
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("Delegate validator "
+                                + Arrays.toString(validatedBy.value())
+                                + " for "
+                                + method.getName()
+                                + " is not accessible. Make sure it has a public default constructor.");
+                    }
+                } else {
+                    validator = inspector.validator(returnType, annotations);
+                }
+
+                boolean isPrimitive = method.getReturnType()
+                        .isPrimitive();
+                if (!isPrimitive && !Util.hasNullable(method.getDeclaredAnnotations())) {
+                    final AbsValidator<Object> originalValidator = validator;
+                    validator = new AbsValidator<Object>() {
+                        @Override
+                        public void validate(Object value) throws ValidationException {
+                            if (value == null) {
+                                throw new ValidationException("Returned value of "
+                                        + method.getName()
+                                        + "() was null.");
+                            } else {
+                                originalValidator.validate(value);
+                            }
+                        }
+                    };
+                } else if (!isPrimitive) {
+                    validator = validator.nullSafe();
+                }
+
+                // Create the binding between method and validator.
+                method.setAccessible(true);
+
+                // Store it using the method's name. If there was already a method with this name, fail!
+                String name = method.getName();
+                MethodBinding<Object> methodBinding = new MethodBinding<>(method, validator);
+                MethodBinding<?> replaced = methodBindings.put(name, methodBinding);
+                if (replaced != null) {
+                    throw new IllegalArgumentException("Conflicting methods:\n"
+                            + "    "
+                            + replaced.method
+                            + "\n"
+                            + "    "
+                            + methodBinding.method);
+                }
+            }
+        }
+
+        /** Returns true if methods with {@code modifiers} are included in the emitted validator. */
+        private boolean includeMethod(boolean platformType, int modifiers) {
+            return !Modifier.isStatic(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(
+                    modifiers) || !platformType);
+        }
+    };
+
+    /**
+     * Returns true if {@code rawType} is built in. We don't reflect on private methods of platform
+     * types because they're unspecified and likely to be different on Java vs. Android.
+     */
+    static boolean isPlatformType(Class<?> rawType) {
+        String name = rawType.getName();
+        return name.startsWith("android.")
+                || name.startsWith("java.")
+                || name.startsWith("javax.")
+                || name.startsWith("kotlin.")
+                || name.startsWith("scala.");
+    }
+
+    private final ClassFactory<T> classFactory;
+    private final MethodBinding<?>[] methodsArray;
+
+    ClassValidator(ClassFactory<T> classFactory, Map<String, MethodBinding<?>> methodsMap) {
+        this.classFactory = classFactory;
+        this.methodsArray = methodsMap.values()
+                .toArray(new MethodBinding[methodsMap.size()]);
+    }
+
+    @Override
+    public String toString() {
+        return "Validator(" + classFactory + ")";
+    }
+
+    @Override
+    public void validate(T validationTarget) throws ValidationException {
+        for (MethodBinding<?> methodBinding : methodsArray) {
+            try {
+                methodBinding.validate(validationTarget);
+            } catch (IllegalAccessException e) {
+                // Shouldn't happen, but just in case
+                throw new ValidationException(methodBinding.method.getName() + " is inaccessible.", e);
+            } catch (InvocationTargetException e) {
+                throw new ValidationException(methodBinding.method.getName()
+                        + " threw an exception when called.", e);
+            }
+        }
+    }
+
+    static class MethodBinding<T> {
+        final Method method;
+        final AbsValidator<T> validator;
+
+        MethodBinding(Method method, AbsValidator<T> validator) {
+            this.method = method;
+            this.validator = validator;
+        }
+
+        @SuppressWarnings({"unchecked", "RedundantThrows"})
+        void validate(Object validationTarget)
+                throws IllegalAccessException, InvocationTargetException {
+            validator.validate((T) method.invoke(validationTarget));
+        }
+    }
+}
