@@ -2,16 +2,13 @@ apply plugin: 'java-library'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation deps.guava
-    implementation deps.misc.javapoet
-    implementation deps.misc.javaxExtras
+    implementation deps.auto.service
 }
-
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
 
 def MAVEN_LOCAL_PATH = uri('../../local_repo')
-def ARTIFACT_ID = 'inspector_base'
+def ARTIFACT_ID = 'inspector_compiler'
 def VERSION_NAME = '0.0.1'
 def GROUP_ID = 'osp.leoebrt.android'
 
@@ -20,7 +17,7 @@ ext {
     bintrayName = ARTIFACT_ID
     artifact = ARTIFACT_ID
     libraryName = ARTIFACT_ID
-    libraryDescription = 'base lib for inspector'
+    libraryDescription = 'compiler lib for inspector'
     libraryVersion = VERSION_NAME
     licenseName = 'MIT'
     licenseUrl = 'https://mit-license.org/'

@@ -1,0 +1,127 @@
+package osp.leobert.android.inspector.notations;
+
+import com.sun.istack.internal.Nullable;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import osp.leobert.android.inspector.Inspector;
+import osp.leobert.android.inspector.Types;
+import osp.leobert.android.inspector.validators.AbsValidator;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.Collections.synchronizedMap;
+
+/**
+ * <p><b>Package:</b> osp.leobert.android.inspector.notations </p>
+ * <p><b>Project:</b> Jsr380 </p>
+ * <p><b>Classname:</b> GenerateValidator </p>
+ * <p><b>Description:</b> TODO </p>
+ * Created by leobert on 2018/11/9.
+ */
+
+@Inherited
+@Retention(RUNTIME)
+@Target(TYPE)
+public @interface GenerateValidator {
+
+    AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+        private final Map<Class<?>, Constructor<? extends AbsValidator>> validators =
+                synchronizedMap(new LinkedHashMap<Class<?>, Constructor<? extends AbsValidator>>());
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public AbsValidator<?> create(Type type,
+                                   Set<? extends Annotation> annotations,
+                                   Inspector inspector) {
+
+            Class<?> rawType = Types.getRawType(type);
+            if (!rawType.isAnnotationPresent(GenerateValidator.class)) {
+                return null;
+            }
+
+            Constructor<? extends AbsValidator> constructor = findConstructorForClass(rawType);
+            if (constructor == null) {
+                return null;
+            }
+            //noinspection TryWithIdenticalCatches Resolves to API 19+ only type.
+            try {
+                if (constructor.getParameterTypes().length == 1) {
+                    return constructor.newInstance(inspector);
+                } else {
+                    if (type instanceof ParameterizedType) {
+                        return constructor.newInstance(inspector,
+                                ((ParameterizedType) type).getActualTypeArguments());
+                    } else {
+                        throw new IllegalStateException("Unable to handle type " + type);
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Unable to invoke " + constructor, e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException("Unable to invoke " + constructor, e);
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                if (cause instanceof Error) {
+                    throw (Error) cause;
+                }
+                throw new RuntimeException("Could not create generated TypeAdapter instance for type "
+                        + rawType, cause);
+            }
+        }
+
+        @Nullable
+        private Constructor<? extends AbsValidator> findConstructorForClass(Class<?> cls) {
+            Constructor<? extends AbsValidator> adapterCtor = validators.get(cls);
+            if (adapterCtor != null) {
+                return adapterCtor;
+            }
+            String clsName = cls.getSimpleName().replace("$", "_");
+            String packageName = cls.getPackage().getName();
+            if (clsName.startsWith("android.")
+                    || clsName.startsWith("java.")
+                    || clsName.startsWith("kotlin.")) {
+                return null;
+            }
+            try {
+                Class<?> bindingClass = cls.getClassLoader()
+                        .loadClass(packageName + ".Validator_" + clsName);
+                try {
+                    // Try the inspector constructor
+                    //noinspection unchecked
+                    adapterCtor =
+                            (Constructor<? extends AbsValidator>) bindingClass.getConstructor(Inspector.class);
+                    adapterCtor.setAccessible(true);
+                } catch (NoSuchMethodException e) {
+                    // Try the inspector + Type[] constructor
+                    //noinspection unchecked
+                    adapterCtor =
+                            (Constructor<? extends AbsValidator>) bindingClass.getConstructor(Inspector.class,
+                                    Type[].class);
+                    adapterCtor.setAccessible(true);
+                }
+            } catch (ClassNotFoundException e) {
+                adapterCtor = findConstructorForClass(cls.getSuperclass());
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("Unable to find binding constructor for " + clsName, e);
+            }
+            validators.put(cls, adapterCtor);
+            return adapterCtor;
+        }
+    };
+}
+

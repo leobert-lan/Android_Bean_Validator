@@ -37,8 +37,8 @@ public final class StandardValidators {
         }
     };
 
-    @SuppressWarnings("WeakerAccess") // Synthetic accessor
-    static final AbsValidator<Object> NO_OP_VALIDATOR = new AbsValidator<Object>() {
+//    @SuppressWarnings("WeakerAccess") // Synthetic accessor
+    private static final AbsValidator<Object> NO_OP_VALIDATOR = new AbsValidator<Object>() {
         @Override
         public void validate(Object validationTarget) throws ValidationException {
             // Nothing to do

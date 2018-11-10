@@ -1,1 +1,6 @@
-include ':android-sample', ':inspector_base'
+include ':android-sample'
+include ':inspector_base'
+include ':inspector_compiler'
+include ':inspector_android_extension'
+
+project(':inspector_android_extension').projectDir = new File('ext/inspector_android_extension')
