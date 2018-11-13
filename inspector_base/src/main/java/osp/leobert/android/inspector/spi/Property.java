@@ -5,6 +5,7 @@ import com.squareup.javapoet.TypeName;
 import com.sun.istack.internal.Nullable;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -80,15 +81,18 @@ public class Property {
         return null;
     }
 
-    @Nullable public <T extends Annotation> T annotation(Class<T> annotation) {
+    @Nullable
+    public <T extends Annotation> T annotation(Class<T> annotation) {
         return element.getAnnotation(annotation);
     }
 
-    @Nullable public ValidatedBy validatedBy() {
+    @Nullable
+    public ValidatedBy validatedBy() {
         return element.getAnnotation(ValidatedBy.class);
     }
 
-    @Nullable public AnnotationMirror validatedByMirror() {
+    @Nullable
+    public AnnotationMirror validatedByMirror() {
         return getAnnotationMirror(element, ValidatedBy.class);
     }
 
@@ -108,5 +112,47 @@ public class Property {
         }
 
         return builder.build();
+    }
+
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public String getHumanName() {
+        return humanName;
+    }
+
+    public ExecutableElement getElement() {
+        return element;
+    }
+
+    public TypeName getType() {
+        return type;
+    }
+
+    public ImmutableSet<String> getAnnotations() {
+        return annotations;
+    }
+
+    @javax.annotation.Nullable
+    public <T extends Annotation> T findAnnotationByAnnotation(Class<T> clazz) {
+        Collection<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
+
+        if (annotations.isEmpty()) return null; // Save an iterator in the common case.
+        for (AnnotationMirror mirror : annotations) {
+            Annotation target = mirror.getAnnotationType()
+                    .asElement()
+                    .getAnnotation(clazz);
+            if (target != null) {
+                //noinspection unchecked
+                return (T) target;
+            }
+        }
+        return null;
+    }
+
+    public boolean isElementHasAnnotation(Class<? extends Annotation> a) {
+        return getElement().getAnnotation(a) != null;
     }
 }

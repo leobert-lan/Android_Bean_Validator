@@ -1,36 +1,36 @@
-package io.sweers.inspector.extensions.android;
+package osp.leobert.android.inspector.extension.android;
 
 import android.support.annotation.FloatRange;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.LongDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Size;
 import android.support.annotation.StringDef;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.lang.model.element.AnnotationMirror;
 
-import io.sweers.inspector.ValidationException;
-import io.sweers.inspector.compiler.plugins.spi.InspectorExtension;
-import io.sweers.inspector.compiler.plugins.spi.Property;
+import osp.leobert.android.inspector.ValidationException;
+import osp.leobert.android.inspector.spi.InspectorExtension;
+import osp.leobert.android.inspector.spi.InspectorExtensionImpl;
+import osp.leobert.android.inspector.spi.Property;
+
 
 @AutoService(InspectorExtension.class)
-public final class AndroidInspectorExtension implements InspectorExtension {
+public final class AndroidInspectorExtension extends InspectorExtensionImpl implements InspectorExtension {
 
     private static final Set<Class<? extends Annotation>> SUPPORTED_ANNOTATIONS =
             Sets.newLinkedHashSet(Arrays.asList(FloatRange.class, IntRange.class, Size.class));
@@ -41,12 +41,12 @@ public final class AndroidInspectorExtension implements InspectorExtension {
     @Override
     public boolean applicable(Property property) {
         for (Class<? extends Annotation> a : SUPPORTED_ANNOTATIONS) {
-            if (property.element.getAnnotation(a) != null) {
+            if (property.isElementHasAnnotation(a)) {
                 return true;
             }
         }
         for (Class<? extends Annotation> a : SUPPORTED_ANNOTATIONS_OF_ANNOTATIONS) {
-            if (findAnnotationByAnnotation(property.element.getAnnotationMirrors(), a) != null) {
+            if (findAnnotationByAnnotation(property, a) != null) {
                 return true;
             }
         }
@@ -162,15 +162,22 @@ public final class AndroidInspectorExtension implements InspectorExtension {
             }
         }
 
-        IntDef intDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), IntDef.class);
+        IntDef intDef = findAnnotationByAnnotation(prop, IntDef.class);
         if (intDef != null) {
             int[] values = intDef.value();
+
+            //
+//            Ints.asList(values)
+//                    .stream()
+//                    .map(l -> variableName + " != " + l)
+//                    .collect(Collectors.toList()))
+            List<String> tmp = new ArrayList<>();
+            for (int i : values) {
+                tmp.add(variableName + " != " + i);
+            }
+
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Ints.asList(values)
-                                    .stream()
-                                    .map(l -> variableName + " != " + l)
-                                    .collect(Collectors.toList())))
+                    String.join(" && ", tmp))
                     .addStatement("throw new $T(\"$L's value must be within scope of its IntDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -178,15 +185,21 @@ public final class AndroidInspectorExtension implements InspectorExtension {
                     .endControlFlow();
         }
 
-        LongDef longDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), LongDef.class);
+        LongDef longDef = findAnnotationByAnnotation(prop, LongDef.class);
         if (longDef != null) {
             long[] values = longDef.value();
+
+            //Longs.asList(values)
+            //                                    .stream()
+            //                                    .map(l -> variableName + " != " + l + "L")
+            //                                    .collect(Collectors.toList()))
+            List<String> tmp2 = new ArrayList<>();
+            for (long l : values) {
+                tmp2.add(variableName + " != " + l + "L");
+            }
+
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Longs.asList(values)
-                                    .stream()
-                                    .map(l -> variableName + " != " + l + "L")
-                                    .collect(Collectors.toList())))
+                    String.join(" && ", tmp2))
                     .addStatement("throw new $T(\"$L's value must be within scope of its LongDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -194,14 +207,19 @@ public final class AndroidInspectorExtension implements InspectorExtension {
                     .endControlFlow();
         }
         StringDef stringDef =
-                findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), StringDef.class);
+                findAnnotationByAnnotation(prop, StringDef.class);
         if (stringDef != null) {
             String[] values = stringDef.value();
+            //
+//            Arrays.stream(values)
+//                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
+//                    .collect(Collectors.toList())
+            List<String> tmp3 = new ArrayList<>();
+            for (String s : values) {
+                tmp3.add("\"" + s + "\".equals(" + variableName + ")");
+            }
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Arrays.stream(values)
-                                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
-                                    .collect(Collectors.toList())))
+                    String.join(" && ", tmp3))
                     .addStatement(
                             "throw new $T(\"$L's value must be within scope of its StringDef. Is \" + $L)",
                             ValidationException.class,
@@ -213,20 +231,24 @@ public final class AndroidInspectorExtension implements InspectorExtension {
         return validationBlock.build();
     }
 
+//    @Nullable
+//    private static <T extends Annotation> T findAnnotationByAnnotation(Collection<? extends
+//            AnnotationMirror> annotations, Class<T> clazz) {
+//        if (annotations.isEmpty()) return null; // Save an iterator in the common case.
+//        for (AnnotationMirror mirror : annotations) {
+//            Annotation target = mirror.getAnnotationType()
+//                    .asElement()
+//                    .getAnnotation(clazz);
+//            if (target != null) {
+//                //noinspection unchecked
+//                return (T) target;
+//            }
+//        }
+//        return null;
+//    }
+
     @Nullable
-    private static <T extends Annotation> T findAnnotationByAnnotation(Collection<? extends
-            AnnotationMirror> annotations,
-                                                                       Class<T> clazz) {
-        if (annotations.isEmpty()) return null; // Save an iterator in the common case.
-        for (AnnotationMirror mirror : annotations) {
-            Annotation target = mirror.getAnnotationType()
-                    .asElement()
-                    .getAnnotation(clazz);
-            if (target != null) {
-                //noinspection unchecked
-                return (T) target;
-            }
-        }
-        return null;
+    private static <T extends Annotation> T findAnnotationByAnnotation(@NonNull Property property, @NonNull Class<T> clazz) {
+        return property.findAnnotationByAnnotation(clazz);
     }
 }

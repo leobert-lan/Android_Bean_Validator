@@ -1,10 +1,9 @@
 apply plugin: 'java-library'
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation deps.guava
-    implementation deps.misc.javapoet
-    implementation deps.misc.javaxExtras
+    api deps.guava
+    api deps.misc.javapoet
+    api deps.misc.javaxExtras
 }
 
 sourceCompatibility = "1.7"
