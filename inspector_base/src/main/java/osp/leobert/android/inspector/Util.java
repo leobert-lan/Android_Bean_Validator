@@ -3,8 +3,10 @@ package osp.leobert.android.inspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import osp.leobert.android.inspector.notations.ValidationQualifier;
@@ -67,5 +69,28 @@ public final class Util {
             }
         }
         return false;
+    }
+
+    /**
+     * delimiter 分隔符
+     * elements 需要连接的字符数组
+     */
+    public static String join(CharSequence delimiter, Collection<? extends CharSequence> elements) {
+        // 空指针判断
+        Objects.requireNonNull(delimiter);
+        Objects.requireNonNull(elements);
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (CharSequence cs : elements) {
+            // 拼接字符
+            stringBuilder
+                    .append(delimiter)
+                    .append(cs);
+        }
+        int index = delimiter != null ? delimiter.length() : 0;
+        if (stringBuilder.length() > 0)
+            return stringBuilder.substring(index);
+        return "";
     }
 }

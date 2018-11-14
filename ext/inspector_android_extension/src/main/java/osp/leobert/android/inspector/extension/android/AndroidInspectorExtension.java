@@ -9,22 +9,22 @@ import android.support.annotation.StringDef;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.lang.model.element.AnnotationMirror;
 
+import osp.leobert.android.inspector.Util;
 import osp.leobert.android.inspector.ValidationException;
 import osp.leobert.android.inspector.spi.InspectorExtension;
 import osp.leobert.android.inspector.spi.InspectorExtensionImpl;
@@ -167,12 +167,19 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
         IntDef intDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), IntDef.class);
         if (intDef != null) {
             int[] values = intDef.value();
+
+            //
+//            Ints.asList(values)
+//                    .stream()
+//                    .map(l -> variableName + " != " + l)
+//                    .collect(Collectors.toList()))
+            List<String> tmp = new ArrayList<>();
+            for (int i : values) {
+                tmp.add(variableName + " != " + i);
+            }
+
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Ints.asList(values)
-                                    .stream()
-                                    .map(l -> variableName + " != " + l)
-                                    .collect(Collectors.toList())))
+                    Util.join(" && ", tmp))
                     .addStatement("throw new $T(\"$L's value must be within scope of its IntDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -183,12 +190,18 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
         LongDef longDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), LongDef.class);
         if (longDef != null) {
             long[] values = longDef.value();
+
+            //Longs.asList(values)
+            //                                    .stream()
+            //                                    .map(l -> variableName + " != " + l + "L")
+            //                                    .collect(Collectors.toList()))
+            List<String> tmp2 = new ArrayList<>();
+            for (long l : values) {
+                tmp2.add(variableName + " != " + l + "L");
+            }
+
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Longs.asList(values)
-                                    .stream()
-                                    .map(l -> variableName + " != " + l + "L")
-                                    .collect(Collectors.toList())))
+                    Util.join(" && ", tmp2))
                     .addStatement("throw new $T(\"$L's value must be within scope of its LongDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -199,11 +212,16 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
                 findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), StringDef.class);
         if (stringDef != null) {
             String[] values = stringDef.value();
+            //
+//            Arrays.stream(values)
+//                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
+//                    .collect(Collectors.toList())
+            List<String> tmp3 = new ArrayList<>();
+            for (String s : values) {
+                tmp3.add("\"" + s + "\".equals(" + variableName + ")");
+            }
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ",
-                            Arrays.stream(values)
-                                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
-                                    .collect(Collectors.toList())))
+                    Util.join(" && ", tmp3))
                     .addStatement(
                             "throw new $T(\"$L's value must be within scope of its StringDef. Is \" + $L)",
                             ValidationException.class,
@@ -217,8 +235,7 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
 
     @Nullable
     private static <T extends Annotation> T findAnnotationByAnnotation(Collection<? extends
-            AnnotationMirror> annotations,
-                                                                       Class<T> clazz) {
+            AnnotationMirror> annotations, Class<T> clazz) {
         if (annotations.isEmpty()) return null; // Save an iterator in the common case.
         for (AnnotationMirror mirror : annotations) {
             Annotation target = mirror.getAnnotationType()
@@ -231,4 +248,5 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
         }
         return null;
     }
+
 }
