@@ -77,6 +77,9 @@ import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
+//import static com.google.common.collect.ImmutableSet.toImmutableSet;
+//import static java.util.stream.Collectors.toList;
+
 @AutoService(Processor.class)
 public class JSR380NotationProcessor extends AbstractProcessor {
 
@@ -142,10 +145,8 @@ public class JSR380NotationProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> supportedAnnotations = Sets.newLinkedHashSet();
-//        extensions.forEach(ext -> supportedAnnotations.addAll(ext.applicableAnnotations()));
-        for (InspectorExtension ext:extensions) {
-            supportedAnnotations.addAll(ext.applicableAnnotations());
-        }
+        extensions.forEach(ext -> supportedAnnotations.addAll(ext.applicableAnnotations()));
+        supportedAnnotations.add("osp.leobert.android.inspector.notations.GenerateValidator");
         return supportedAnnotations;
     }
 
@@ -158,6 +159,8 @@ public class JSR380NotationProcessor extends AbstractProcessor {
         for (Element element : elements) {
             TypeElement targetClass = (TypeElement) element;
             if (applicable(targetClass)) {
+                messager.printMessage(Diagnostic.Kind.NOTE,
+                        String.format("Found class need to generate Validator : %s class", targetClass));
                 generateClass(targetClass);
             }
         }
@@ -506,12 +509,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
     }
 
     private static int getTypeIndexInArray(TypeVariableName[] array, TypeName typeName) {
-        return Arrays.binarySearch(array, typeName, new Comparator<TypeName>() {
-            @Override
-            public int compare(TypeName typeName, TypeName t1) {
-                return typeName.equals(t1) ? 0 : -1;
-            }
-        } /*(typeName1, t1) -> typeName1.equals(t1) ? 0 : -1*/);
+        return Arrays.binarySearch(array, typeName, (typeName1, t1) -> typeName1.equals(t1) ? 0 : -1);
     }
 
     private static MethodSpec createAdapterMethod(TypeName targetClassName) {

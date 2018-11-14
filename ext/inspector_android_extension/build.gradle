@@ -1,14 +1,13 @@
 apply plugin: 'java-library'
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
     api project(":inspector_base")
     api deps.auto.service
     api deps.misc.javapoet
     api deps.misc.javaxExtras
-
-    api deps.misc.guava
+    api deps.guava
     api deps.support.annotations
 }
 

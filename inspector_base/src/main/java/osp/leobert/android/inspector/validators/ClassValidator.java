@@ -1,6 +1,6 @@
 package osp.leobert.android.inspector.validators;
 
-import com.sun.istack.internal.Nullable;
+import javax.annotation.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;

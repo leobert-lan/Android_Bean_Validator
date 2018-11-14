@@ -1,6 +1,5 @@
 package osp.leobert.android.inspector.notations;
 
-import com.sun.istack.internal.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
@@ -13,6 +12,8 @@ import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.Types;

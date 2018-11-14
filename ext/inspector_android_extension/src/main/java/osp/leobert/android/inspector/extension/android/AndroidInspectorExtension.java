@@ -4,24 +4,26 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.LongDef;
-import android.support.annotation.NonNull;
 import android.support.annotation.Size;
 import android.support.annotation.StringDef;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.lang.model.element.AnnotationMirror;
 
 import osp.leobert.android.inspector.ValidationException;
 import osp.leobert.android.inspector.spi.InspectorExtension;
@@ -41,12 +43,12 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
     @Override
     public boolean applicable(Property property) {
         for (Class<? extends Annotation> a : SUPPORTED_ANNOTATIONS) {
-            if (property.isElementHasAnnotation(a)) {
+            if (property.element.getAnnotation(a) != null) {
                 return true;
             }
         }
         for (Class<? extends Annotation> a : SUPPORTED_ANNOTATIONS_OF_ANNOTATIONS) {
-            if (findAnnotationByAnnotation(property, a) != null) {
+            if (findAnnotationByAnnotation(property.element.getAnnotationMirrors(), a) != null) {
                 return true;
             }
         }
@@ -162,22 +164,15 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
             }
         }
 
-        IntDef intDef = findAnnotationByAnnotation(prop, IntDef.class);
+        IntDef intDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), IntDef.class);
         if (intDef != null) {
             int[] values = intDef.value();
-
-            //
-//            Ints.asList(values)
-//                    .stream()
-//                    .map(l -> variableName + " != " + l)
-//                    .collect(Collectors.toList()))
-            List<String> tmp = new ArrayList<>();
-            for (int i : values) {
-                tmp.add(variableName + " != " + i);
-            }
-
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ", tmp))
+                    String.join(" && ",
+                            Ints.asList(values)
+                                    .stream()
+                                    .map(l -> variableName + " != " + l)
+                                    .collect(Collectors.toList())))
                     .addStatement("throw new $T(\"$L's value must be within scope of its IntDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -185,21 +180,15 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
                     .endControlFlow();
         }
 
-        LongDef longDef = findAnnotationByAnnotation(prop, LongDef.class);
+        LongDef longDef = findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), LongDef.class);
         if (longDef != null) {
             long[] values = longDef.value();
-
-            //Longs.asList(values)
-            //                                    .stream()
-            //                                    .map(l -> variableName + " != " + l + "L")
-            //                                    .collect(Collectors.toList()))
-            List<String> tmp2 = new ArrayList<>();
-            for (long l : values) {
-                tmp2.add(variableName + " != " + l + "L");
-            }
-
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ", tmp2))
+                    String.join(" && ",
+                            Longs.asList(values)
+                                    .stream()
+                                    .map(l -> variableName + " != " + l + "L")
+                                    .collect(Collectors.toList())))
                     .addStatement("throw new $T(\"$L's value must be within scope of its LongDef. Is \" + $L)",
                             ValidationException.class,
                             prop.methodName,
@@ -207,19 +196,14 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
                     .endControlFlow();
         }
         StringDef stringDef =
-                findAnnotationByAnnotation(prop, StringDef.class);
+                findAnnotationByAnnotation(prop.element.getAnnotationMirrors(), StringDef.class);
         if (stringDef != null) {
             String[] values = stringDef.value();
-            //
-//            Arrays.stream(values)
-//                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
-//                    .collect(Collectors.toList())
-            List<String> tmp3 = new ArrayList<>();
-            for (String s : values) {
-                tmp3.add("\"" + s + "\".equals(" + variableName + ")");
-            }
             validationBlock.beginControlFlow("if (!($L))",
-                    String.join(" && ", tmp3))
+                    String.join(" && ",
+                            Arrays.stream(values)
+                                    .map(s -> "\"" + s + "\".equals(" + variableName + ")")
+                                    .collect(Collectors.toList())))
                     .addStatement(
                             "throw new $T(\"$L's value must be within scope of its StringDef. Is \" + $L)",
                             ValidationException.class,
@@ -231,24 +215,20 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
         return validationBlock.build();
     }
 
-//    @Nullable
-//    private static <T extends Annotation> T findAnnotationByAnnotation(Collection<? extends
-//            AnnotationMirror> annotations, Class<T> clazz) {
-//        if (annotations.isEmpty()) return null; // Save an iterator in the common case.
-//        for (AnnotationMirror mirror : annotations) {
-//            Annotation target = mirror.getAnnotationType()
-//                    .asElement()
-//                    .getAnnotation(clazz);
-//            if (target != null) {
-//                //noinspection unchecked
-//                return (T) target;
-//            }
-//        }
-//        return null;
-//    }
-
     @Nullable
-    private static <T extends Annotation> T findAnnotationByAnnotation(@NonNull Property property, @NonNull Class<T> clazz) {
-        return property.findAnnotationByAnnotation(clazz);
+    private static <T extends Annotation> T findAnnotationByAnnotation(Collection<? extends
+            AnnotationMirror> annotations,
+                                                                       Class<T> clazz) {
+        if (annotations.isEmpty()) return null; // Save an iterator in the common case.
+        for (AnnotationMirror mirror : annotations) {
+            Annotation target = mirror.getAnnotationType()
+                    .asElement()
+                    .getAnnotation(clazz);
+            if (target != null) {
+                //noinspection unchecked
+                return (T) target;
+            }
+        }
+        return null;
     }
 }
