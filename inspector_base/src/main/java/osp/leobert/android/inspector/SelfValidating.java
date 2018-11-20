@@ -6,7 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 /**
  * An interface that a given type can implement to let Inspector know that it validates itself.
@@ -30,15 +30,15 @@ public interface SelfValidating {
     /**
      * A factory instance for this. This is not considered public API.
      */
-    AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+    Validator.Factory FACTORY = new Validator.Factory() {
 
         @Nullable
         @Override
-        public AbsValidator<?> create(final Type type,
-                                      final Set<? extends Annotation> annotations,
-                                      final Inspector inspector) {
+        public Validator<?> create(final Type type,
+                                   final Set<? extends Annotation> annotations,
+                                   final Inspector inspector) {
             if (SelfValidating.class.isAssignableFrom(Types.getRawType(type))) {
-                return new AbsValidator<SelfValidating>() {
+                return new Validator<SelfValidating>() {
                     @Override
                     public void validate(SelfValidating target) throws ValidationException {
                         target.validate(inspector);

@@ -9,11 +9,11 @@ import osp.leobert.android.inspector.ValidationException;
 
 public final class StandardValidators {
 
-    public static final AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+    public static final Validator.Factory FACTORY = new Validator.Factory() {
         @Override
-        public AbsValidator<?> create(Type type,
-                                      Set<? extends Annotation> annotations,
-                                      Inspector inspector) {
+        public Validator<?> create(Type type,
+                                   Set<? extends Annotation> annotations,
+                                   Inspector inspector) {
             if (!annotations.isEmpty()) return null;
             if (type == boolean.class) return NO_OP_VALIDATOR;
             if (type == byte.class) return NO_OP_VALIDATOR;
@@ -38,7 +38,7 @@ public final class StandardValidators {
     };
 
 //    @SuppressWarnings("WeakerAccess") // Synthetic accessor
-    private static final AbsValidator<Object> NO_OP_VALIDATOR = new AbsValidator<Object>() {
+    private static final Validator<Object> NO_OP_VALIDATOR = new Validator<Object>() {
         @Override
         public void validate(Object validationTarget) throws ValidationException {
             // Nothing to do

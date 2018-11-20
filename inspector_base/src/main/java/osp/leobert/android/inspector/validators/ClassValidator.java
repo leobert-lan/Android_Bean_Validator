@@ -35,13 +35,13 @@ import osp.leobert.android.inspector.notations.ValidatedBy;
  * <li>scala.*
  * </ul>
  */
-public final class ClassValidator<T> extends AbsValidator<T> {
-    public static final AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+public final class ClassValidator<T> extends Validator<T> {
+    public static final Validator.Factory FACTORY = new Validator.Factory() {
         @Override
         public @Nullable
-        AbsValidator<?> create(Type type,
-                               Set<? extends Annotation> annotations,
-                               Inspector inspector) {
+        Validator<?> create(Type type,
+                            Set<? extends Annotation> annotations,
+                            Inspector inspector) {
             Class<?> rawType = Types.getRawType(type);
             if (rawType.isInterface() || rawType.isEnum()) return null;
             if (isPlatformType(rawType) && !Types.isAllowedPlatformType(rawType)) {
@@ -90,10 +90,10 @@ public final class ClassValidator<T> extends AbsValidator<T> {
                 // Look up a type validator for this type.
                 Type returnType = Types.resolve(type, rawType, method.getGenericReturnType());
                 Set<? extends Annotation> annotations = Util.validationAnnotations(method);
-                AbsValidator<Object> validator;
+                Validator<Object> validator;
                 ValidatedBy validatedBy = method.getAnnotation(ValidatedBy.class);
                 if (validatedBy != null) {
-                    Class<? extends AbsValidator<?>>[] validatorClasses = validatedBy.value();
+                    Class<? extends Validator<?>>[] validatorClasses = validatedBy.value();
                     if (validatorClasses.length == 0) {
                         throw new IllegalArgumentException(
                                 "No validators specified in @ValidatedBy annotation on type "
@@ -104,11 +104,11 @@ public final class ClassValidator<T> extends AbsValidator<T> {
                     try {
                         if (validatorClasses.length == 1) {
                             //noinspection unchecked
-                            validator = (AbsValidator<Object>) validatorClasses[0].newInstance();
+                            validator = (Validator<Object>) validatorClasses[0].newInstance();
                         } else {
-                            AbsValidator[] validators = new AbsValidator[validatorClasses.length];
+                            Validator[] validators = new Validator[validatorClasses.length];
                             for (int i = 0; i < validatorClasses.length; i++) {
-                                Class<? extends AbsValidator<?>> clazz = validatorClasses[i];
+                                Class<? extends Validator<?>> clazz = validatorClasses[i];
                                 validators[i] = clazz.newInstance();
                             }
                             //noinspection unchecked
@@ -134,8 +134,8 @@ public final class ClassValidator<T> extends AbsValidator<T> {
                 boolean isPrimitive = method.getReturnType()
                         .isPrimitive();
                 if (!isPrimitive && !Util.hasNullable(method.getDeclaredAnnotations())) {
-                    final AbsValidator<Object> originalValidator = validator;
-                    validator = new AbsValidator<Object>() {
+                    final Validator<Object> originalValidator = validator;
+                    validator = new Validator<Object>() {
                         @Override
                         public void validate(Object value) throws ValidationException {
                             if (value == null) {
@@ -220,9 +220,9 @@ public final class ClassValidator<T> extends AbsValidator<T> {
 
     static class MethodBinding<T> {
         final Method method;
-        final AbsValidator<T> validator;
+        final Validator<T> validator;
 
-        MethodBinding(Method method, AbsValidator<T> validator) {
+        MethodBinding(Method method, Validator<T> validator) {
             this.method = method;
             this.validator = validator;
         }

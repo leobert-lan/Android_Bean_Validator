@@ -44,7 +44,7 @@ import javax.lang.model.util.Types;
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.SelfValidating;
 import osp.leobert.android.inspector.notations.InspectorFactory;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -53,7 +53,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 @AutoService(Processor.class)
 public final class InspectorFactoryProcessor extends AbstractProcessor {
 
-    private static final ClassName ADAPTER_CLASS_NAME = ClassName.get(AbsValidator.class);
+    private static final ClassName ADAPTER_CLASS_NAME = ClassName.get(Validator.class);
     private static final ParameterSpec TYPE_SPEC = ParameterSpec.builder(Type.class, "type")
             .build();
     private static final WildcardTypeName WILDCARD_TYPE_NAME =
@@ -97,7 +97,7 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
 
         for (TypeElement factory : factories) {
             if (!typeImplements(factory,
-                    elementUtils.getTypeElement(AbsValidator.Factory.class.getCanonicalName())
+                    elementUtils.getTypeElement(Validator.Factory.class.getCanonicalName())
                             .asType())) {
                 error(factory, "Must implement Validator.Factory!");
             }
@@ -257,7 +257,7 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
     @Nullable
     private ExecutableElement getValidatorMethod(TypeElement element) {
         ParameterizedTypeName validatorType =
-                ParameterizedTypeName.get(ClassName.get(AbsValidator.class), TypeName.get(element.asType()));
+                ParameterizedTypeName.get(ClassName.get(Validator.class), TypeName.get(element.asType()));
         for (ExecutableElement method : ElementFilter.methodsIn(element.getEnclosedElements())) {
             if (method.getModifiers()
                     .contains(Modifier.STATIC) && method.getModifiers()

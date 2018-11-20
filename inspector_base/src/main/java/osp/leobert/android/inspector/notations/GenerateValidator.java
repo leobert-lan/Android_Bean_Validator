@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.Types;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -36,14 +36,14 @@ import static java.util.Collections.synchronizedMap;
 @Target(TYPE)
 public @interface GenerateValidator {
 
-    AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
-        private final Map<Class<?>, Constructor<? extends AbsValidator>> validators =
-                synchronizedMap(new LinkedHashMap<Class<?>, Constructor<? extends AbsValidator>>());
+    Validator.Factory FACTORY = new Validator.Factory() {
+        private final Map<Class<?>, Constructor<? extends Validator>> validators =
+                synchronizedMap(new LinkedHashMap<Class<?>, Constructor<? extends Validator>>());
 
         @SuppressWarnings("unchecked")
         @Nullable
         @Override
-        public AbsValidator<?> create(Type type,
+        public Validator<?> create(Type type,
                                    Set<? extends Annotation> annotations,
                                    Inspector inspector) {
 
@@ -52,7 +52,7 @@ public @interface GenerateValidator {
                 return null;
             }
 
-            Constructor<? extends AbsValidator> constructor = findConstructorForClass(rawType);
+            Constructor<? extends Validator> constructor = findConstructorForClass(rawType);
             if (constructor == null) {
                 return null;
             }
@@ -86,8 +86,8 @@ public @interface GenerateValidator {
         }
 
         @Nullable
-        private Constructor<? extends AbsValidator> findConstructorForClass(Class<?> cls) {
-            Constructor<? extends AbsValidator> adapterCtor = validators.get(cls);
+        private Constructor<? extends Validator> findConstructorForClass(Class<?> cls) {
+            Constructor<? extends Validator> adapterCtor = validators.get(cls);
             if (adapterCtor != null) {
                 return adapterCtor;
             }
@@ -105,13 +105,13 @@ public @interface GenerateValidator {
                     // Try the inspector constructor
                     //noinspection unchecked
                     adapterCtor =
-                            (Constructor<? extends AbsValidator>) bindingClass.getConstructor(Inspector.class);
+                            (Constructor<? extends Validator>) bindingClass.getConstructor(Inspector.class);
                     adapterCtor.setAccessible(true);
                 } catch (NoSuchMethodException e) {
                     // Try the inspector + Type[] constructor
                     //noinspection unchecked
                     adapterCtor =
-                            (Constructor<? extends AbsValidator>) bindingClass.getConstructor(Inspector.class,
+                            (Constructor<? extends Validator>) bindingClass.getConstructor(Inspector.class,
                                     Type[].class);
                     adapterCtor.setAccessible(true);
                 }

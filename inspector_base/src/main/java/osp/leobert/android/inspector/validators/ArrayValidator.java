@@ -15,24 +15,24 @@ import osp.leobert.android.inspector.ValidationException;
 /**
  * Validates arrays.
  */
-public final class ArrayValidator extends AbsValidator<Object> {
+public final class ArrayValidator extends Validator<Object> {
     public static final Factory FACTORY = new Factory() {
         @Override
         public @Nullable
-        AbsValidator<?> create(Type type,
-                               Set<? extends Annotation> annotations,
-                               Inspector inspector) {
+        Validator<?> create(Type type,
+                            Set<? extends Annotation> annotations,
+                            Inspector inspector) {
             Type elementType = Types.arrayComponentType(type);
             if (elementType == null) return null;
             if (!annotations.isEmpty()) return null;
-            AbsValidator<Object> elementAbsValidator = inspector.validator(elementType);
+            Validator<Object> elementAbsValidator = inspector.validator(elementType);
             return new ArrayValidator(elementAbsValidator).nullSafe();
         }
     };
 
-    private final AbsValidator<Object> elementAbsValidator;
+    private final Validator<Object> elementAbsValidator;
 
-    ArrayValidator(AbsValidator<Object> elementAbsValidator) {
+    ArrayValidator(Validator<Object> elementAbsValidator) {
         this.elementAbsValidator = elementAbsValidator;
     }
 

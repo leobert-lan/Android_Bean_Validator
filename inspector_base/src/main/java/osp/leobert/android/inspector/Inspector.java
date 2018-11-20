@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import osp.leobert.android.inspector.notations.ValidationQualifier;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 import osp.leobert.android.inspector.validators.ArrayValidator;
 import osp.leobert.android.inspector.validators.ClassValidator;
@@ -22,7 +22,7 @@ import osp.leobert.android.inspector.validators.MapValidator;
 import osp.leobert.android.inspector.validators.StandardValidators;
 
 public final class Inspector {
-    private static final List<AbsValidator.Factory> BUILT_IN_FACTORIES = new ArrayList<>(5);
+    private static final List<Validator.Factory> BUILT_IN_FACTORIES = new ArrayList<>(5);
 
     static {
         BUILT_IN_FACTORIES.add(StandardValidators.FACTORY);
@@ -35,11 +35,11 @@ public final class Inspector {
 
     @SuppressWarnings("ThreadLocalUsage")
     private final ThreadLocal<List<DeferredAdapter<?>>> reentrantCalls = new ThreadLocal<>();
-    private final List<AbsValidator.Factory> factories;
-    private final Map<Object, AbsValidator<?>> adapterCache = new LinkedHashMap<>();
+    private final List<Validator.Factory> factories;
+    private final Map<Object, Validator<?>> adapterCache = new LinkedHashMap<>();
 
     Inspector(Builder builder) {
-        List<AbsValidator.Factory> factories =
+        List<Validator.Factory> factories =
                 new ArrayList<>(builder.factories.size() + BUILT_IN_FACTORIES.size());
         factories.addAll(builder.factories);
         factories.addAll(BUILT_IN_FACTORIES);
@@ -49,14 +49,14 @@ public final class Inspector {
     /**
      * Returns a AbsValidator for {@code type}, creating it if necessary.
      */
-    public <T> AbsValidator<T> validator(Type type) {
+    public <T> Validator<T> validator(Type type) {
         return validator(type, Util.NO_ANNOTATIONS);
     }
 
     /**
      * Returns a AbsValidator for {@code type}, creating it if necessary.
      */
-    public <T> AbsValidator<T> validator(Class<T> type) {
+    public <T> Validator<T> validator(Class<T> type) {
         return validator(type, Util.NO_ANNOTATIONS);
     }
 
@@ -64,7 +64,7 @@ public final class Inspector {
     /**
      * Returns a AbsValidator for {@code type} with {@code annotationType}, creating it if necessary.
      */
-    public <T> AbsValidator<T> validator(Type type, Class<? extends Annotation> annotationType) {
+    public <T> Validator<T> validator(Type type, Class<? extends Annotation> annotationType) {
         return validator(type,
                 Collections.singleton(Types.createValidationQualifierImplementation(annotationType)));
     }
@@ -73,14 +73,14 @@ public final class Inspector {
      * Returns a AbsValidator for {@code type} and {@code annotations}, creating it if necessary.
      */
     @SuppressWarnings("unchecked") // Factories are required to return only matching AbsValidators.
-    public <T> AbsValidator<T> validator(Type type, Set<? extends Annotation> annotations) {
+    public <T> Validator<T> validator(Type type, Set<? extends Annotation> annotations) {
         type = Types.canonicalize(type);
 
         // If there's an equivalent adapter in the cache, we're done!
         Object cacheKey = cacheKey(type, annotations);
         synchronized (adapterCache) {
-            AbsValidator<?> result = adapterCache.get(cacheKey);
-            if (result != null) return (AbsValidator<T>) result;
+            Validator<?> result = adapterCache.get(cacheKey);
+            if (result != null) return (Validator<T>) result;
         }
 
         // Short-circuit if this is a reentrant call.
@@ -92,7 +92,7 @@ public final class Inspector {
                     continue;
                 }
                 if (deferredAdapter.cacheKey.equals(cacheKey)) {
-                    return (AbsValidator<T>) deferredAdapter;
+                    return (Validator<T>) deferredAdapter;
                 }
             }
         } else {
@@ -104,8 +104,8 @@ public final class Inspector {
         DeferredAdapter<T> deferredAdapter = new DeferredAdapter<>(cacheKey);
         deferredAdapters.add(deferredAdapter);
         try {
-            for (AbsValidator.Factory factory : factories) {
-                AbsValidator<T> result = (AbsValidator<T>) factory.create(type, annotations, this);
+            for (Validator.Factory factory : factories) {
+                Validator<T> result = (Validator<T>) factory.create(type, annotations, this);
                 if (result != null) {
                     deferredAdapter.ready(result);
                     synchronized (adapterCache) {
@@ -130,9 +130,9 @@ public final class Inspector {
      * skipping past {@code skipPast} for creation.
      */
     @SuppressWarnings("unchecked") // Factories are required to return only matching AbsValidators.
-    public <T> AbsValidator<T> nextAbsValidator(AbsValidator.Factory skipPast,
-                                                Type type,
-                                                Set<? extends Annotation> annotations) {
+    public <T> Validator<T> nextAbsValidator(Validator.Factory skipPast,
+                                             Type type,
+                                             Set<? extends Annotation> annotations) {
         type = Types.canonicalize(type);
 
         int skipPastIndex = factories.indexOf(skipPast);
@@ -140,7 +140,7 @@ public final class Inspector {
             throw new IllegalArgumentException("Unable to skip past unknown factory " + skipPast);
         }
         for (int i = skipPastIndex + 1, size = factories.size(); i < size; i++) {
-            AbsValidator<T> result = (AbsValidator<T>) factories.get(i)
+            Validator<T> result = (Validator<T>) factories.get(i)
                     .create(type, annotations, this);
             if (result != null) return result;
         }
@@ -156,7 +156,7 @@ public final class Inspector {
     public Inspector.Builder newBuilder() {
         int fullSize = factories.size();
         int tailSize = BUILT_IN_FACTORIES.size();
-        List<AbsValidator.Factory> customFactories = factories.subList(0, fullSize - tailSize);
+        List<Validator.Factory> customFactories = factories.subList(0, fullSize - tailSize);
         return new Builder().addAll(customFactories);
     }
 
@@ -170,18 +170,18 @@ public final class Inspector {
 
 
     public static final class Builder {
-        final List<AbsValidator.Factory> factories = new ArrayList<>();
+        final List<Validator.Factory> factories = new ArrayList<>();
 
-        public <T> Builder add(final Type type, final AbsValidator<T> AbsValidator) {
+        public <T> Builder add(final Type type, final Validator<T> AbsValidator) {
             if (type == null) throw new IllegalArgumentException("type == null");
             if (AbsValidator == null) throw new IllegalArgumentException("AbsValidator == null");
 
-            return add(new AbsValidator.Factory() {
+            return add(new Validator.Factory() {
                 @Override
                 public @Nullable
-                AbsValidator<?> create(Type targetType,
-                                       Set<? extends Annotation> annotations,
-                                       Inspector inspector) {
+                Validator<?> create(Type targetType,
+                                    Set<? extends Annotation> annotations,
+                                    Inspector inspector) {
                     return annotations.isEmpty() && Util.typesMatch(type, targetType) ? AbsValidator : null;
                 }
             });
@@ -189,7 +189,7 @@ public final class Inspector {
 
         public <T> Builder add(final Type type,
                                final Class<? extends Annotation> annotation,
-                               final AbsValidator<T> AbsValidator) {
+                               final Validator<T> AbsValidator) {
             if (type == null) throw new IllegalArgumentException("type == null");
             if (annotation == null) throw new IllegalArgumentException("annotation == null");
             if (AbsValidator == null) throw new IllegalArgumentException("AbsValidator == null");
@@ -200,12 +200,12 @@ public final class Inspector {
                 throw new IllegalArgumentException("Use AbsValidator.Factory for annotations with elements");
             }
 
-            return add(new AbsValidator.Factory() {
+            return add(new Validator.Factory() {
                 @Override
                 public @Nullable
-                AbsValidator<?> create(Type targetType,
-                                       Set<? extends Annotation> annotations,
-                                       Inspector inspector) {
+                Validator<?> create(Type targetType,
+                                    Set<? extends Annotation> annotations,
+                                    Inspector inspector) {
                     if (Util.typesMatch(type, targetType)
                             && annotations.size() == 1
                             && Util.isAnnotationPresent(annotations, annotation)) {
@@ -216,13 +216,13 @@ public final class Inspector {
             });
         }
 
-        public Builder add(AbsValidator.Factory factory) {
+        public Builder add(Validator.Factory factory) {
             if (factory == null) throw new IllegalArgumentException("factory == null");
             factories.add(factory);
             return this;
         }
 
-        Builder addAll(List<AbsValidator.Factory> factories) {
+        Builder addAll(List<Validator.Factory> factories) {
             this.factories.addAll(factories);
             return this;
         }
@@ -240,17 +240,17 @@ public final class Inspector {
      * <p>Typically this is necessary in self-referential object models, such as an {@code Employee}
      * class that has a {@code List<Employee>} field for an organization's management hierarchy.
      */
-    private static class DeferredAdapter<T> extends AbsValidator<T> {
+    private static class DeferredAdapter<T> extends Validator<T> {
         @Nullable
         Object cacheKey;
         @Nullable
-        private AbsValidator<T> delegate;
+        private Validator<T> delegate;
 
         DeferredAdapter(Object cacheKey) {
             this.cacheKey = cacheKey;
         }
 
-        void ready(AbsValidator<T> delegate) {
+        void ready(Validator<T> delegate) {
             this.delegate = delegate;
             this.cacheKey = null;
         }

@@ -14,13 +14,13 @@ import osp.leobert.android.inspector.ValidationException;
 /**
  * Validates maps.
  */
-public final class MapValidator<K, V> extends AbsValidator<Map<K, V>> {
-    public static final AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+public final class MapValidator<K, V> extends Validator<Map<K, V>> {
+    public static final Validator.Factory FACTORY = new Validator.Factory() {
         @Override
         public @Nullable
-        AbsValidator<?> create(Type type,
-                               Set<? extends Annotation> annotations,
-                               Inspector inspector) {
+        Validator<?> create(Type type,
+                            Set<? extends Annotation> annotations,
+                            Inspector inspector) {
             if (!annotations.isEmpty()) return null;
             Class<?> rawType = Types.getRawType(type);
             if (rawType != Map.class) return null;
@@ -29,8 +29,8 @@ public final class MapValidator<K, V> extends AbsValidator<Map<K, V>> {
         }
     };
 
-    private final AbsValidator<K> keyAdapter;
-    private final AbsValidator<V> valueAdapter;
+    private final Validator<K> keyAdapter;
+    private final Validator<V> valueAdapter;
 
     MapValidator(Inspector inspector, Type keyType, Type valueType) {
         this.keyAdapter = inspector.validator(keyType);

@@ -16,7 +16,7 @@ import osp.leobert.android.inspector.ValidationException;
  * <p><b>Description:</b> abstract validator logic for validate T </p>
  * Created by leobert on 2018/9/12.
  */
-public abstract class AbsValidator<T> {
+public abstract class Validator<T> {
     /**
      * Validates a given {@code t} instance
      *
@@ -37,9 +37,9 @@ public abstract class AbsValidator<T> {
     /**
      * @return a nullsafe validator that ignores null instances.
      */
-    public AbsValidator<T> nullSafe() {
-        final AbsValidator<T> delegate = this;
-        return new AbsValidator<T>() {
+    public Validator<T> nullSafe() {
+        final Validator<T> delegate = this;
+        return new Validator<T>() {
             @Override
             public void validate(T validationTarget) throws ValidationException {
                 if (validationTarget != null) {
@@ -64,8 +64,8 @@ public abstract class AbsValidator<T> {
          * or {@link Inspector#nextValidator} to delegate to the underlying adapter of the same type.
          */
         @Nullable
-        AbsValidator<?> create(Type type,
-                               Set<? extends Annotation> annotations,
-                               Inspector inspector);
+        Validator<?> create(Type type,
+                            Set<? extends Annotation> annotations,
+                            Inspector inspector);
     }
 }

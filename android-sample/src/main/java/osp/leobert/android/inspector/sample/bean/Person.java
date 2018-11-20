@@ -15,9 +15,8 @@ import java.util.Map;
 import java.util.Set;
 
 import osp.leobert.android.inspector.Inspector;
-import osp.leobert.android.inspector.notations.GenerateValidator;
 import osp.leobert.android.inspector.notations.InspectorIgnored;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 
 @AutoValue
@@ -89,7 +88,7 @@ public abstract class Person<T, V> {
 
     public abstract V genericTwo();
 
-    public static <T, V> AbsValidator<Person<T, V>> validator(Inspector inspector, Type[] types) {
+    public static <T, V> Validator<Person<T, V>> validator(Inspector inspector, Type[] types) {
         return new Validator_Person<>(inspector, types);
     }
 }

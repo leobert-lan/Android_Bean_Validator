@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.notations.GenerateValidator;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 
 /**
@@ -42,7 +42,7 @@ public class Demo {
     }
 
 
-    public static AbsValidator<Demo> validator(Inspector inspector) {
+    public static Validator<Demo> validator(Inspector inspector) {
         return new Validator_Demo(inspector);
     }
 }

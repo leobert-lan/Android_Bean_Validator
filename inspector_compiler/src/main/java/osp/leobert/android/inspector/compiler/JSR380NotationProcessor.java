@@ -66,7 +66,7 @@ import osp.leobert.android.inspector.notations.InspectorIgnored;
 import osp.leobert.android.inspector.notations.ValidationQualifier;
 import osp.leobert.android.inspector.spi.InspectorExtension;
 import osp.leobert.android.inspector.spi.Property;
-import osp.leobert.android.inspector.validators.AbsValidator;
+import osp.leobert.android.inspector.validators.Validator;
 import osp.leobert.android.inspector.validators.CompositeValidator;
 
 import static com.google.auto.common.AnnotationMirrors.getAnnotationValue;
@@ -224,7 +224,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
         // check that the class contains a public static method returning a Validator
         TypeName typeName = TypeName.get(type.asType());
         ParameterizedTypeName validatorType =
-                ParameterizedTypeName.get(ClassName.get(AbsValidator.class), typeName);
+                ParameterizedTypeName.get(ClassName.get(Validator.class), typeName);
         TypeName returnedValidator = null;
         for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
             if (method.getModifiers()
@@ -342,7 +342,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
                                              @Nullable TypeVariableName[] genericTypeNames,
                                              List<Property> properties) {
         TypeName validatorClass =
-                ParameterizedTypeName.get(ClassName.get(AbsValidator.class), targetClassName);
+                ParameterizedTypeName.get(ClassName.get(Validator.class), targetClassName);
 
         ImmutableMap<Property, FieldSpec> validators = createFields(properties);
 
@@ -526,7 +526,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
         return MethodSpec.methodBuilder("validator")
                 .addModifiers(PRIVATE)
                 .addParameters(ImmutableSet.of(inspector, methodName))
-                .returns(AbsValidator.class)
+                .returns(Validator.class)
                 .addCode(CodeBlock.builder()
                         .beginControlFlow("try")
                         .addStatement("$T method = $T.class.getDeclaredMethod($N)",
@@ -557,7 +557,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
 
         for (Property property : properties) {
             TypeName type = property.type.isPrimitive() ? property.type.box() : property.type;
-            ParameterizedTypeName adp = ParameterizedTypeName.get(ClassName.get(AbsValidator.class), type);
+            ParameterizedTypeName adp = ParameterizedTypeName.get(ClassName.get(Validator.class), type);
             fields.put(property,
                     FieldSpec.builder(adp, property.humanName + "Validator", PRIVATE, FINAL)
                             .build());

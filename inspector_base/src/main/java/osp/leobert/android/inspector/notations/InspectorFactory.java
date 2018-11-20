@@ -5,12 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 
+import osp.leobert.android.inspector.validators.Validator;
+
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
  * Annotation to indicate that a given class should generate a concrete implementation of a
- * {@link osp.leobert.android.inspector.validators.AbsValidator.Factory} that handles all the publicly denoted validator implementations of this
+ * {@link Validator.Factory} that handles all the publicly denoted validator implementations of this
  * project.
  * <p>
  * <code><pre>

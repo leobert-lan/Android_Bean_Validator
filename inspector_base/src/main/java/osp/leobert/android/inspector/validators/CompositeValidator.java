@@ -10,46 +10,46 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * A convenience {@link AbsValidator} that can compose multiple validators.
+ * A convenience {@link Validator} that can compose multiple validators.
  */
-public final class CompositeValidator<T> extends AbsValidator<T> {
+public final class CompositeValidator<T> extends Validator<T> {
 
     @SafeVarargs
-    public static <T> CompositeValidator<T> of(AbsValidator<? super T>... validators) {
+    public static <T> CompositeValidator<T> of(Validator<? super T>... validators) {
         if (validators == null) {
             throw new NullPointerException("No validators received!");
         }
         return of(asList(validators));
     }
 
-    public static <T> CompositeValidator<T> of(Iterable<AbsValidator<? super T>> validators) {
+    public static <T> CompositeValidator<T> of(Iterable<Validator<? super T>> validators) {
         if (validators == null) {
             throw new NullPointerException("validators are null");
         }
-        ArrayList<AbsValidator<? super T>> list = new ArrayList<>();
-        for (AbsValidator<? super T> validator : validators) {
+        ArrayList<Validator<? super T>> list = new ArrayList<>();
+        for (Validator<? super T> validator : validators) {
             list.add(validator);
         }
         return new CompositeValidator<>(list);
     }
 
-    public static <T> CompositeValidator<T> of(List<AbsValidator<? super T>> validators) {
+    public static <T> CompositeValidator<T> of(List<Validator<? super T>> validators) {
         if (validators == null) {
             throw new NullPointerException("validators are null");
         }
         return new CompositeValidator<>(unmodifiableList(validators));
     }
 
-    private final List<AbsValidator<? super T>> validators;
+    private final List<Validator<? super T>> validators;
 
-    private CompositeValidator(List<AbsValidator<? super T>> validators) {
+    private CompositeValidator(List<Validator<? super T>> validators) {
         this.validators = validators;
     }
 
     @Override
     public void validate(T t) throws CompositeValidationException {
         List<ValidationException> exceptions = new ArrayList<>();
-        for (AbsValidator<? super T> validator : validators) {
+        for (Validator<? super T> validator : validators) {
             try {
                 validator.validate(t);
             } catch (ValidationException e) {

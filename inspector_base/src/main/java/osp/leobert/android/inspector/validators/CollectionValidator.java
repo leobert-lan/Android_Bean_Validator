@@ -15,13 +15,13 @@ import osp.leobert.android.inspector.ValidationException;
 /**
  * Validates collections.
  */
-public class CollectionValidator<C extends Collection<T>, T> extends AbsValidator<C> {
-    public static final AbsValidator.Factory FACTORY = new AbsValidator.Factory() {
+public class CollectionValidator<C extends Collection<T>, T> extends Validator<C> {
+    public static final Validator.Factory FACTORY = new Validator.Factory() {
         @Override
         public @Nullable
-        AbsValidator<?> create(Type type,
-                               Set<? extends Annotation> annotations,
-                               Inspector inspector) {
+        Validator<?> create(Type type,
+                            Set<? extends Annotation> annotations,
+                            Inspector inspector) {
             Class<?> rawType = Types.getRawType(type);
             if (!annotations.isEmpty()) return null;
             if (rawType == List.class || rawType == Collection.class || rawType == Set.class) {
@@ -31,15 +31,15 @@ public class CollectionValidator<C extends Collection<T>, T> extends AbsValidato
         }
     };
 
-    private final AbsValidator<T> elementValidator;
+    private final Validator<T> elementValidator;
 
-    private CollectionValidator(AbsValidator<T> elementValidator) {
+    private CollectionValidator(Validator<T> elementValidator) {
         this.elementValidator = elementValidator;
     }
 
-    static <T> AbsValidator<Collection<T>> newCollectionValidator(Type type, Inspector inspector) {
+    static <T> Validator<Collection<T>> newCollectionValidator(Type type, Inspector inspector) {
         Type elementType = Types.collectionElementType(type, Collection.class);
-        AbsValidator<T> elementValidator = inspector.validator(elementType);
+        Validator<T> elementValidator = inspector.validator(elementType);
         return new CollectionValidator<>(elementValidator);
     }
 
