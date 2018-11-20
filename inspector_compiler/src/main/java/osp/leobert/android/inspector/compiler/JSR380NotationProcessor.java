@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -60,18 +61,18 @@ import javax.tools.Diagnostic;
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.SelfValidating;
 import osp.leobert.android.inspector.Types;
+import osp.leobert.android.inspector.Util;
 import osp.leobert.android.inspector.ValidationException;
 import osp.leobert.android.inspector.notations.GenerateValidator;
 import osp.leobert.android.inspector.notations.InspectorIgnored;
 import osp.leobert.android.inspector.notations.ValidationQualifier;
 import osp.leobert.android.inspector.spi.InspectorExtension;
 import osp.leobert.android.inspector.spi.Property;
-import osp.leobert.android.inspector.validators.Validator;
 import osp.leobert.android.inspector.validators.CompositeValidator;
+import osp.leobert.android.inspector.validators.Validator;
 
 import static com.google.auto.common.AnnotationMirrors.getAnnotationValue;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -151,7 +152,10 @@ public class JSR380NotationProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> supportedAnnotations = Sets.newLinkedHashSet();
-        extensions.forEach(ext -> supportedAnnotations.addAll(ext.applicableAnnotations()));
+//        extensions.forEach(ext -> supportedAnnotations.addAll(ext.applicableAnnotations()));
+        for (InspectorExtension ext : extensions) {
+            supportedAnnotations.addAll(ext.applicableAnnotations());
+        }
         supportedAnnotations.add("osp.leobert.android.inspector.notations.GenerateValidator");
         return supportedAnnotations;
     }
@@ -376,9 +380,15 @@ public class JSR380NotationProcessor extends AbstractProcessor {
             }
             AnnotationMirror validatedBy = prop.validatedByMirror();
             if (validatedBy != null) {
-                Set<TypeElement> validatorClasses = getValueFieldOfClasses(validatedBy).stream()
+                Set<TypeElement> validatorClasses = new LinkedHashSet<>();
+                       /* getValueFieldOfClasses(validatedBy).stream()
                         .map(MoreTypes::asTypeElement)
-                        .collect(toImmutableSet());
+                        .collect(toImmutableSet());*/
+                ImmutableSet<DeclaredType> set = getValueFieldOfClasses(validatedBy);
+                for (DeclaredType t : set) {
+                    validatorClasses.add(MoreTypes.asTypeElement(t));
+                }
+
                 if (validatorClasses.isEmpty()) {
                     messager.printMessage(Diagnostic.Kind.ERROR,
                             "No validator classes specified in @ValidatedBy annotation!",
@@ -389,13 +399,28 @@ public class JSR380NotationProcessor extends AbstractProcessor {
                             ClassName.get(validatorClasses.iterator()
                                     .next()));
                 } else {
-                    String validatorsString = String.join(", ",
+                    /*
+                    * String validatorsString = String.join(", ",
                             validatorClasses.stream()
                                     .map(c -> "new $T()")
-                                    .collect(toList()));
-                    ClassName[] arguments = validatorClasses.stream()
+                                    .collect(toList()));*/
+                    List<String> tmp = new ArrayList<>();
+                    for (int i = 0; i < validatorClasses.size(); i++) {
+                        tmp.add("new $T()");
+                    }
+                    String validatorsString = Util.join(", ", tmp);
+
+                    /*
+                    *  ClassName[] arguments = validatorClasses.stream()
                             .map(ClassName::get)
                             .toArray(ClassName[]::new);
+                    * */
+                    List<ClassName> cnList = new ArrayList<>();
+                    for (TypeElement v : validatorClasses) {
+                        cnList.add(ClassName.get(v));
+                    }
+                    ClassName[] arguments = cnList.toArray(new ClassName[0]);
+
                     CodeBlock validatorsCodeBlock = CodeBlock.of(validatorsString, (Object[]) arguments);
                     constructor.addStatement("this.$N = $T.<$T>of($L)",
                             field,
@@ -485,31 +510,68 @@ public class JSR380NotationProcessor extends AbstractProcessor {
                 .addException(ValidationException.class);
 
         // Go through validators
+//        NameAllocator allocator = new NameAllocator();
+//        validators.entrySet()
+//                .stream()
+//                .filter(entry -> entry.getKey()
+//                        .shouldValidate())
+//                .forEach(entry -> {
+//                    Property prop = entry.getKey();
+//                    FieldSpec validator = entry.getValue();
+//                    String name = allocator.newName(entry.getKey().methodName);
+//                    validateMethod.addComment("Begin validation for \"$L()\"", prop.methodName)
+//                            .addStatement("$T $L = $N.$L()", prop.type, name, value, prop.methodName)
+//                            .addCode("\n");
+//                    extensions.stream()
+//                            .sorted(Comparator.comparing(InspectorExtension::priority))
+//                            .filter(e -> e.applicable(prop))
+//                            .forEach(e -> {
+//                                CodeBlock block = e.generateValidation(prop, name, value);
+//                                if (block != null) {
+//                                    validateMethod.addComment("Validations contributed by $S", e.toString())
+//                                            .addCode(block);
+//                                }
+//                            });
+//                    validateMethod.addStatement("$N.validate($L)", validator, name)
+//                            .addCode("\n");
+//                });
+
         NameAllocator allocator = new NameAllocator();
-        validators.entrySet()
-                .stream()
-                .filter(entry -> entry.getKey()
-                        .shouldValidate())
-                .forEach(entry -> {
-                    Property prop = entry.getKey();
-                    FieldSpec validator = entry.getValue();
-                    String name = allocator.newName(entry.getKey().methodName);
-                    validateMethod.addComment("Begin validation for \"$L()\"", prop.methodName)
-                            .addStatement("$T $L = $N.$L()", prop.type, name, value, prop.methodName)
-                            .addCode("\n");
-                    extensions.stream()
-                            .sorted(Comparator.comparing(InspectorExtension::priority))
-                            .filter(e -> e.applicable(prop))
-                            .forEach(e -> {
-                                CodeBlock block = e.generateValidation(prop, name, value);
-                                if (block != null) {
-                                    validateMethod.addComment("Validations contributed by $S", e.toString())
-                                            .addCode(block);
-                                }
-                            });
-                    validateMethod.addStatement("$N.validate($L)", validator, name)
-                            .addCode("\n");
-                });
+        ImmutableSet<Map.Entry<Property, FieldSpec>> set = validators.entrySet();
+        List<Map.Entry<Property, FieldSpec>> filtered = new ArrayList<>();
+        for (Map.Entry<Property, FieldSpec> entry : set) {
+            if (entry.getKey().shouldValidate())
+                filtered.add(entry);
+        }
+
+        for (Map.Entry<Property, FieldSpec> entry : filtered) {
+            Property prop = entry.getKey();
+            FieldSpec validator = entry.getValue();
+            String name = allocator.newName(entry.getKey().methodName);
+            validateMethod.addComment("Begin validation for \"$L()\"", prop.methodName)
+                    .addStatement("$T $L = $N.$L()", prop.type, name, value, prop.methodName)
+                    .addCode("\n");
+            List<InspectorExtension> asListExtensions = new ArrayList<>();
+            asListExtensions.addAll(extensions);
+            Collections.sort(asListExtensions,
+                    new Comparator<InspectorExtension>() {
+
+                        @Override
+                        public int compare(InspectorExtension t1, InspectorExtension t2) {
+                            return t1.priority().getValue() > t2.priority().getValue() ? 1 : 0;
+                        }
+                    });
+            for (InspectorExtension e : asListExtensions) {
+                CodeBlock block = e.generateValidation(prop, name, value);
+                if (block != null) {
+                    validateMethod.addComment("Validations contributed by $S", e.toString())
+                            .addCode(block);
+                }
+            }
+
+            validateMethod.addStatement("$N.validate($L)", validator, name)
+                    .addCode("\n");
+        }
 
         return validateMethod.build();
     }
