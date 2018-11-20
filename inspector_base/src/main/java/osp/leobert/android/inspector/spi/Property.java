@@ -2,13 +2,12 @@ package osp.leobert.android.inspector.spi;
 
 import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.TypeName;
-import javax.annotation.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -42,7 +41,8 @@ public class Property {
         annotations = buildAnnotations(element);
     }
 
-    @Nullable static TypeMirror getAnnotationValue(Element foo, Class<?> annotation) {
+    @Nullable
+    static TypeMirror getAnnotationValue(Element foo, Class<?> annotation) {
         AnnotationMirror am = getAnnotationMirror(foo, annotation);
         if (am == null) {
             return null;
@@ -80,15 +80,18 @@ public class Property {
         return null;
     }
 
-    @Nullable public <T extends Annotation> T annotation(Class<T> annotation) {
+    @Nullable
+    public <T extends Annotation> T annotation(Class<T> annotation) {
         return element.getAnnotation(annotation);
     }
 
-    @Nullable public ValidatedBy validatedBy() {
+    @Nullable
+    public ValidatedBy validatedBy() {
         return element.getAnnotation(ValidatedBy.class);
     }
 
-    @Nullable public AnnotationMirror validatedByMirror() {
+    @Nullable
+    public AnnotationMirror validatedByMirror() {
         return getAnnotationMirror(element, ValidatedBy.class);
     }
 

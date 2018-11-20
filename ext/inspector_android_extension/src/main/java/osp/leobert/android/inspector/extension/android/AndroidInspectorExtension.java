@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -27,12 +28,11 @@ import javax.lang.model.element.AnnotationMirror;
 import osp.leobert.android.inspector.Util;
 import osp.leobert.android.inspector.ValidationException;
 import osp.leobert.android.inspector.spi.InspectorExtension;
-import osp.leobert.android.inspector.spi.InspectorExtensionImpl;
 import osp.leobert.android.inspector.spi.Property;
 
 
 @AutoService(InspectorExtension.class)
-public final class AndroidInspectorExtension extends InspectorExtensionImpl implements InspectorExtension {
+public final class AndroidInspectorExtension implements InspectorExtension {
 
     private static final Set<Class<? extends Annotation>> SUPPORTED_ANNOTATIONS =
             Sets.newLinkedHashSet(Arrays.asList(FloatRange.class, IntRange.class, Size.class));
@@ -53,6 +53,11 @@ public final class AndroidInspectorExtension extends InspectorExtensionImpl impl
             }
         }
         return false;
+    }
+
+    @Override
+    public Set<String> applicableAnnotations() {
+        return Collections.singleton("com.google.auto.value.AutoValue");
     }
 
     @Override

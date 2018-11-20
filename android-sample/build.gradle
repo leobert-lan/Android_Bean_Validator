@@ -32,7 +32,12 @@ dependencies {
 //    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     api project(":inspector_base")
-    api project(":inspector_android_extension")
+//    api project(":ext:inspector_android_extension")
 
+    annotationProcessor project(":ext:inspector_android_extension")
     annotationProcessor project(":inspector_compiler")
+    annotationProcessor deps.auto.value
+    api deps.auto.value
+
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
 }

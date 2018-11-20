@@ -121,6 +121,12 @@ public class JSR380NotationProcessor extends AbstractProcessor {
         try {
             extensions =
                     ImmutableSet.copyOf(ServiceLoader.load(InspectorExtension.class, loaderForExtensions));
+
+            StringBuilder tmp = new StringBuilder();
+            for (InspectorExtension ext : extensions) {
+                tmp.append(ext.getClass().getName()).append(" ; ");
+            }
+            messager.printMessage(Diagnostic.Kind.NOTE, "JSR380 >>> check extensions:" + tmp.toString());
             // ServiceLoader.load returns a lazily-evaluated Iterable, so evaluate it eagerly now
             // to discover any exceptions.
         } catch (Throwable t) {

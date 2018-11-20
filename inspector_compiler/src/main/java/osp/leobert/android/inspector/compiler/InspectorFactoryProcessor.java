@@ -41,7 +41,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.SelfValidating;
 import osp.leobert.android.inspector.notations.InspectorFactory;

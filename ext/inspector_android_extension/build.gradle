@@ -9,6 +9,7 @@ dependencies {
     api deps.misc.javaxExtras
     api deps.guava
     api deps.support.annotations
+    api deps.auto.value
 }
 
 def MAVEN_LOCAL_PATH = uri('../../../local_repo')

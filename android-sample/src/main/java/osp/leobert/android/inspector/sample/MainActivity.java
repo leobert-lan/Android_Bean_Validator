@@ -34,4 +34,17 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    @Override
+    protected void onDestroy() {
+        Log.e("lmsg","onDestroy");
+        finish();
+        super.onDestroy();
+    }
+
+    @Override
+    public void finish() {
+        Log.e("lmsg","finish");
+        super.finish();
+    }
 }
