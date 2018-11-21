@@ -66,6 +66,11 @@ public final class AndroidInspectorExtension implements InspectorExtension {
     }
 
     @Override
+    public Priority priority() {
+        return Priority.NONE;
+    }
+
+    @Override
     public String toString() {
         return AndroidInspectorExtension.class.getSimpleName();
     }

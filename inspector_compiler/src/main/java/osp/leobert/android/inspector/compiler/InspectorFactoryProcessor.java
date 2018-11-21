@@ -16,12 +16,14 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+//import java.util.function.Function;
+//import java.util.stream.Collectors;
+//import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.annotation.processing.AbstractProcessor;
@@ -90,10 +92,18 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<TypeElement> factories = roundEnv.getElementsAnnotatedWith(InspectorFactory.class)
+        Set<TypeElement> factories = new LinkedHashSet<>();
+                /*roundEnv.getElementsAnnotatedWith(InspectorFactory.class)
                 .stream()
                 .map((Function<Element, TypeElement>) element -> (TypeElement) element)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet());*/
+
+        Set<? extends Element> tmp = roundEnv.getElementsAnnotatedWith(InspectorFactory.class);
+        for (Element e : tmp) {
+            if (e instanceof TypeElement) {
+                factories.add((TypeElement) e);
+            }
+        }
 
         for (TypeElement factory : factories) {
             if (!typeImplements(factory,
@@ -101,24 +111,44 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
                             .asType())) {
                 error(factory, "Must implement Validator.Factory!");
             }
-            List<TypeElement> validationTargets =
-                    getTargetClasses(factory.getAnnotation(InspectorFactory.class)).flatMap(targetClass ->
-                            roundEnv.getElementsAnnotatedWith(
-                                    targetClass)
-                                    .stream())
-                            .map((Function<Element, TypeElement>) element -> {
-                                if (!(element instanceof TypeElement)) {
-                                    throw new UnsupportedOperationException(
-                                            "InspectorFactories can only operate on annotated types.");
-                                }
-                                return (TypeElement) element;
-                            })
-                            // Filter out anything that's self validating - they'll be handled by the built-in
-                            // factory
-                            .filter(element -> !typeImplements(element,
-                                    elementUtils.getTypeElement(SelfValidating.class.getCanonicalName())
-                                            .asType()))
-                            .collect(Collectors.toList());
+            List<TypeElement> validationTargets = new ArrayList<>();
+//                    getTargetClasses(factory.getAnnotation(InspectorFactory.class)).flatMap(targetClass ->
+//                            roundEnv.getElementsAnnotatedWith(
+//                                    targetClass)
+//                                    .stream())
+//                            .map((Function<Element, TypeElement>) element -> {
+//                                if (!(element instanceof TypeElement)) {
+//                                    throw new UnsupportedOperationException(
+//                                            "InspectorFactories can only operate on annotated types.");
+//                                }
+//                                return (TypeElement) element;
+//                            })
+//                            // Filter out anything that's self validating - they'll be handled by the built-in
+//                            // factory
+//                            .filter(element -> !typeImplements(element,
+//                                    elementUtils.getTypeElement(SelfValidating.class.getCanonicalName())
+//                                            .asType()))
+//                            .collect(Collectors.toList());
+
+            List<TypeElement> targetClasses = getTargetClassesJdk7(factory.getAnnotation(InspectorFactory.class));
+            for (TypeElement t : targetClasses) {
+                if (!typeImplements(t, elementUtils.getTypeElement(SelfValidating.class.getCanonicalName())
+                        .asType())) {
+                    validationTargets.add(t);
+                }
+                Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(t);
+                for (Element e : elements) {
+                    if (!(e instanceof TypeElement)) {
+                        throw new UnsupportedOperationException(
+                                "InspectorFactories can only operate on annotated types.");
+                    }
+
+                    if (!typeImplements((TypeElement) e,
+                            elementUtils.getTypeElement(SelfValidating.class.getCanonicalName()).asType())) {
+                        validationTargets.add((TypeElement) e);
+                    }
+                }
+            }
 
             String adapterName = classNameOf(factory);
             String packageName = packageNameOf(factory);
@@ -272,15 +302,36 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
         return null;
     }
 
-    private Stream<TypeElement> getTargetClasses(InspectorFactory factory) {
+//    private Stream<TypeElement> getTargetClasses(InspectorFactory factory) {
+//        try {
+//            factory.include();
+//        } catch (MirroredTypesException e) {
+//            //noinspection Convert2Lambda this doesn't work on CI as a lambda/method ref ?_?
+//            return e.getTypeMirrors()
+//                    .stream()
+//                    .map((Function<TypeMirror, String>) TypeMirror::toString)
+//                    .map(name -> elementUtils.getTypeElement(name));
+//        }
+//        throw new RuntimeException(
+//                "Could not inspect factory includes. Java annotation processing is weird.");
+//    }
+
+    private List<TypeElement> getTargetClassesJdk7(InspectorFactory factory) {
         try {
             factory.include();
         } catch (MirroredTypesException e) {
             //noinspection Convert2Lambda this doesn't work on CI as a lambda/method ref ?_?
-            return e.getTypeMirrors()
-                    .stream()
-                    .map((Function<TypeMirror, String>) TypeMirror::toString)
-                    .map(name -> elementUtils.getTypeElement(name));
+            List<? extends TypeMirror> mirrors = e.getTypeMirrors();
+            List<TypeElement> targetClasses = new ArrayList<>();
+            for (TypeMirror m : mirrors) {
+                String s = m.toString();
+                targetClasses.add(elementUtils.getTypeElement(s));
+            }
+            return targetClasses;
+//            return e.getTypeMirrors()
+//                    .stream()
+//                    .map((Function<TypeMirror, String>) TypeMirror::toString)
+//                    .map(name -> elementUtils.getTypeElement(name));
         }
         throw new RuntimeException(
                 "Could not inspect factory includes. Java annotation processing is weird.");

@@ -3,7 +3,6 @@ package osp.leobert.android.inspector.spi;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.ParameterSpec;
 
-import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -15,10 +14,9 @@ public interface InspectorExtension {
 
     /**
      * @return any other applicable annotations you want to process.
+     * return Collections.emptySet();
      */
-    default Set<String> applicableAnnotations() {
-        return Collections.emptySet();
-    }
+    Set<String> applicableAnnotations();
 
     /**
      * This is for checking if a given `Property` is applicable for this extension. For instance,
@@ -26,10 +24,9 @@ public interface InspectorExtension {
      *
      * @param property the property to check
      * @return true if applicable, false if not.
+     * return false;
      */
-    default boolean applicable(Property property) {
-        return false;
-    }
+    boolean applicable(Property property);
 
     /**
      * This is for generating your actual validation. This uses a JavaPoet CodeBlock, and gives you
@@ -42,24 +39,22 @@ public interface InspectorExtension {
      *                     If you are validating a `Person` instance, this is the instance as passed
      *                     to the `validate` method.
      * @return a codeblock of validation logic to execute, or null if there is none.
+     * return null;
      */
     @Nullable
-    default CodeBlock generateValidation(Property prop,
-                                         String propertyName,
-                                         ParameterSpec typeInstance) {
-        return null;
-    }
+    CodeBlock generateValidation(Property prop,
+                                 String propertyName,
+                                 ParameterSpec typeInstance);
 
     /**
      * This for declaring priority of your extension. This is useful if you have higher priority
      * validation that should run as early as possible (such as nullability). Most validations should
-     * not care what order they are run in though. Default is {@link Priority#NONE}.
+     * not care what order they are run in though.  is {@link Priority#NONE}.
      *
      * @return the priority
+     * return Priority.NONE;
      */
-    default Priority priority() {
-        return Priority.NONE;
-    }
+    Priority priority();
 
     enum Priority {
         /**
@@ -75,7 +70,7 @@ public interface InspectorExtension {
 
         /**
          * Use this priority to indicate that it does not matter when this runs, as long as it does.
-         * This is the default mode.
+         * This is the  mode.
          */
         NONE(0);
 
