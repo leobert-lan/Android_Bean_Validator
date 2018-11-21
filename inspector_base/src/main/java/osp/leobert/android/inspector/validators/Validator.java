@@ -12,7 +12,7 @@ import osp.leobert.android.inspector.ValidationException;
 /**
  * <p><b>Package:</b> osp.leobert.android.inspector.validators </p>
  * <p><b>Project:</b> Jsr380 </p>
- * <p><b>Classname:</b> AbsValidator </p>
+ * <p><b>Classname:</b> Validator </p>
  * <p><b>Description:</b> abstract validator logic for validate T </p>
  * Created by leobert on 2018/9/12.
  */

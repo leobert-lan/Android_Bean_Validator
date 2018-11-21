@@ -47,14 +47,14 @@ public final class Inspector {
     }
 
     /**
-     * Returns a AbsValidator for {@code type}, creating it if necessary.
+     * Returns a Validator for {@code type}, creating it if necessary.
      */
     public <T> Validator<T> validator(Type type) {
         return validator(type, Util.NO_ANNOTATIONS);
     }
 
     /**
-     * Returns a AbsValidator for {@code type}, creating it if necessary.
+     * Returns a Validator for {@code type}, creating it if necessary.
      */
     public <T> Validator<T> validator(Class<T> type) {
         return validator(type, Util.NO_ANNOTATIONS);
@@ -62,7 +62,7 @@ public final class Inspector {
 
 
     /**
-     * Returns a AbsValidator for {@code type} with {@code annotationType}, creating it if necessary.
+     * Returns a Validator for {@code type} with {@code annotationType}, creating it if necessary.
      */
     public <T> Validator<T> validator(Type type, Class<? extends Annotation> annotationType) {
         return validator(type,
@@ -70,9 +70,9 @@ public final class Inspector {
     }
 
     /**
-     * Returns a AbsValidator for {@code type} and {@code annotations}, creating it if necessary.
+     * Returns a Validator for {@code type} and {@code annotations}, creating it if necessary.
      */
-    @SuppressWarnings("unchecked") // Factories are required to return only matching AbsValidators.
+    @SuppressWarnings("unchecked") // Factories are required to return only matching Validators.
     public <T> Validator<T> validator(Type type, Set<? extends Annotation> annotations) {
         type = Types.canonicalize(type);
 
@@ -121,16 +121,16 @@ public final class Inspector {
             }
         }
 
-        throw new IllegalArgumentException("No AbsValidator for " + type + " annotated " + annotations);
+        throw new IllegalArgumentException("No Validator for " + type + " annotated " + annotations);
     }
 
 
     /**
-     * Returns a AbsValidator for {@code type} and {@code annotations}, always creating a new one and
+     * Returns a Validator for {@code type} and {@code annotations}, always creating a new one and
      * skipping past {@code skipPast} for creation.
      */
-    @SuppressWarnings("unchecked") // Factories are required to return only matching AbsValidators.
-    public <T> Validator<T> nextAbsValidator(Validator.Factory skipPast,
+    @SuppressWarnings("unchecked") // Factories are required to return only matching Validators.
+    public <T> Validator<T> nextValidator(Validator.Factory skipPast,
                                              Type type,
                                              Set<? extends Annotation> annotations) {
         type = Types.canonicalize(type);
@@ -144,7 +144,7 @@ public final class Inspector {
                     .create(type, annotations, this);
             if (result != null) return result;
         }
-        throw new IllegalArgumentException("No next AbsValidator for "
+        throw new IllegalArgumentException("No next Validator for "
                 + type
                 + " annotated "
                 + annotations);
@@ -172,9 +172,9 @@ public final class Inspector {
     public static final class Builder {
         final List<Validator.Factory> factories = new ArrayList<>();
 
-        public <T> Builder add(final Type type, final Validator<T> AbsValidator) {
+        public <T> Builder add(final Type type, final Validator<T> Validator) {
             if (type == null) throw new IllegalArgumentException("type == null");
-            if (AbsValidator == null) throw new IllegalArgumentException("AbsValidator == null");
+            if (Validator == null) throw new IllegalArgumentException("Validator == null");
 
             return add(new Validator.Factory() {
                 @Override
@@ -182,22 +182,22 @@ public final class Inspector {
                 Validator<?> create(Type targetType,
                                     Set<? extends Annotation> annotations,
                                     Inspector inspector) {
-                    return annotations.isEmpty() && Util.typesMatch(type, targetType) ? AbsValidator : null;
+                    return annotations.isEmpty() && Util.typesMatch(type, targetType) ? Validator : null;
                 }
             });
         }
 
         public <T> Builder add(final Type type,
                                final Class<? extends Annotation> annotation,
-                               final Validator<T> AbsValidator) {
+                               final Validator<T> Validator) {
             if (type == null) throw new IllegalArgumentException("type == null");
             if (annotation == null) throw new IllegalArgumentException("annotation == null");
-            if (AbsValidator == null) throw new IllegalArgumentException("AbsValidator == null");
+            if (Validator == null) throw new IllegalArgumentException("Validator == null");
             if (!annotation.isAnnotationPresent(ValidationQualifier.class)) {
                 throw new IllegalArgumentException(annotation + " does not have @ValidationQualifier");
             }
             if (annotation.getDeclaredMethods().length > 0) {
-                throw new IllegalArgumentException("Use AbsValidator.Factory for annotations with elements");
+                throw new IllegalArgumentException("Use Validator.Factory for annotations with elements");
             }
 
             return add(new Validator.Factory() {
@@ -209,7 +209,7 @@ public final class Inspector {
                     if (Util.typesMatch(type, targetType)
                             && annotations.size() == 1
                             && Util.isAnnotationPresent(annotations, annotation)) {
-                        return AbsValidator;
+                        return Validator;
                     }
                     return null;
                 }
@@ -257,7 +257,7 @@ public final class Inspector {
 
         @Override
         public void validate(T validationTarget) throws ValidationException {
-            if (delegate == null) throw new IllegalStateException("AbsValidator isn't ready");
+            if (delegate == null) throw new IllegalStateException("Validator isn't ready");
             delegate.validate(validationTarget);
         }
     }

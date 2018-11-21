@@ -4,6 +4,7 @@ import android.support.annotation.FloatRange;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.LongDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Size;
 import android.support.annotation.StringDef;
 
@@ -13,6 +14,7 @@ import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ import osp.leobert.android.inspector.spi.Property;
 public final class AndroidInspectorExtension implements InspectorExtension {
 
     private static final Set<Class<? extends Annotation>> SUPPORTED_ANNOTATIONS =
-            Sets.newLinkedHashSet(Arrays.asList(FloatRange.class, IntRange.class, Size.class));
+            Sets.newLinkedHashSet(Arrays.asList(FloatRange.class, IntRange.class, Size.class, NonNull.class));
 
     private static final Set<Class<? extends Annotation>> SUPPORTED_ANNOTATIONS_OF_ANNOTATIONS =
             Sets.newLinkedHashSet(Arrays.asList(IntDef.class, LongDef.class, StringDef.class));
@@ -52,6 +54,10 @@ public final class AndroidInspectorExtension implements InspectorExtension {
                 return true;
             }
         }
+        if (!property.type.isPrimitive()
+                && !property.type.equals(TypeName.VOID.box())
+                && !property.annotations.contains("Nullable"))
+            return true;
         return false;
     }
 
@@ -237,6 +243,16 @@ public final class AndroidInspectorExtension implements InspectorExtension {
                             ValidationException.class,
                             prop.methodName,
                             variableName)
+                    .endControlFlow();
+        }
+
+        NonNull nonNull = prop.annotation(NonNull.class);
+        if (nonNull != null) {
+            validationBlock
+                    .beginControlFlow("if ($L == null)", variableName)
+                    .addStatement("throw new $T($S)",
+                            ValidationException.class,
+                            prop.methodName + "() is not nullable but returns a null")
                     .endControlFlow();
         }
 

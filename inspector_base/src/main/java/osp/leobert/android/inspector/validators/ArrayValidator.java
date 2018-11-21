@@ -25,26 +25,26 @@ public final class ArrayValidator extends Validator<Object> {
             Type elementType = Types.arrayComponentType(type);
             if (elementType == null) return null;
             if (!annotations.isEmpty()) return null;
-            Validator<Object> elementAbsValidator = inspector.validator(elementType);
-            return new ArrayValidator(elementAbsValidator).nullSafe();
+            Validator<Object> elementValidator = inspector.validator(elementType);
+            return new ArrayValidator(elementValidator).nullSafe();
         }
     };
 
-    private final Validator<Object> elementAbsValidator;
+    private final Validator<Object> elementValidator;
 
-    ArrayValidator(Validator<Object> elementAbsValidator) {
-        this.elementAbsValidator = elementAbsValidator;
+    ArrayValidator(Validator<Object> elementValidator) {
+        this.elementValidator = elementValidator;
     }
 
     @Override
     public void validate(Object validationTarget) throws ValidationException {
         for (int i = 0, size = Array.getLength(validationTarget); i < size; i++) {
-            elementAbsValidator.validate(Array.get(validationTarget, i));
+            elementValidator.validate(Array.get(validationTarget, i));
         }
     }
 
     @Override
     public String toString() {
-        return elementAbsValidator + ".array()";
+        return elementValidator + ".array()";
     }
 }

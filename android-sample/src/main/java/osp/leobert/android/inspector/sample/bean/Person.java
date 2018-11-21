@@ -10,12 +10,16 @@ import android.support.annotation.StringDef;
 import com.google.auto.value.AutoValue;
 
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.notations.InspectorIgnored;
+import osp.leobert.android.inspector.notations.ValidatedBy;
+import osp.leobert.android.inspector.sample.DateValidator;
+import osp.leobert.android.inspector.sample.SecondaryDateValidator;
 import osp.leobert.android.inspector.validators.Validator;
 
 
@@ -67,6 +71,8 @@ public abstract class Person<T, V> {
     @Nullable
     public abstract String occupation();
 
+    @ValidatedBy({DateValidator.class, SecondaryDateValidator.class})
+    public abstract Date birthday();
 
     @InspectorIgnored
     public abstract String uuid();
