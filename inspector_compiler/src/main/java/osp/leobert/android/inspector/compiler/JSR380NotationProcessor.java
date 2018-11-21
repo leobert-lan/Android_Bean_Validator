@@ -71,12 +71,16 @@ import osp.leobert.android.inspector.spi.Property;
 import osp.leobert.android.inspector.validators.CompositeValidator;
 import osp.leobert.android.inspector.validators.Validator;
 
-import static com.google.auto.common.AnnotationMirrors.getAnnotationValue;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static osp.leobert.android.inspector.compiler.ProcessorUtil.getAnnotationValue;
+
+//import static com.google.auto.common.AnnotationMirrors.getAnnotationValue;
+//import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
+//import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 //import static com.google.common.collect.ImmutableSet.toImmutableSet;
 //import static java.util.stream.Collectors.toList;
@@ -386,7 +390,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
                         .collect(toImmutableSet());*/
                 ImmutableSet<DeclaredType> set = getValueFieldOfClasses(validatedBy);
                 for (DeclaredType t : set) {
-                    validatorClasses.add(MoreTypes.asTypeElement(t));
+                    validatorClasses.add(ProcessorUtil.asTypeElement(t));
                 }
 
                 if (validatorClasses.isEmpty()) {
@@ -481,6 +485,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
      * annotationMirror}.
      */
     private ImmutableSet<DeclaredType> getValueFieldOfClasses(AnnotationMirror annotationMirror) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> values = annotationMirror.getElementValues();
         return getAnnotationValue(annotationMirror,
                 "value").accept(new SimpleAnnotationValueVisitor8<ImmutableSet<DeclaredType>, Void>() {
             @Override
@@ -490,13 +495,20 @@ public class JSR380NotationProcessor extends AbstractProcessor {
 
             @Override
             public ImmutableSet<DeclaredType> visitArray(List<? extends AnnotationValue> values, Void v) {
-                return values.stream()
-                        .flatMap(value -> value.accept(this, null)
-                                .stream())
-                        .collect(toImmutableSet());
+                List<DeclaredType> tmp = new ArrayList<>();
+                for (AnnotationValue value : values) {
+                    Set<DeclaredType> a = value.accept(this, null);
+                    tmp.addAll(a);
+                }
+                return ImmutableSet.copyOf(tmp);
+//                return values.stream()
+//                        .flatMap(value -> value.accept(this, null)
+//                                .stream())
+//                        .collect(toImmutableSet());
             }
         }, null);
     }
+
 
     private MethodSpec createValidationMethod(TypeName targetClassName,
                                               ImmutableMap<Property, FieldSpec> validators) {
@@ -577,7 +589,13 @@ public class JSR380NotationProcessor extends AbstractProcessor {
     }
 
     private static int getTypeIndexInArray(TypeVariableName[] array, TypeName typeName) {
-        return Arrays.binarySearch(array, typeName, (typeName1, t1) -> typeName1.equals(t1) ? 0 : -1);
+//        return Arrays.binarySearch(array, typeName, (typeName1, t1) -> typeName1.equals(t1) ? 0 : -1);
+        return Arrays.binarySearch(array, typeName, new Comparator<TypeName>() {
+            @Override
+            public int compare(TypeName typeName, TypeName t1) {
+                return typeName.equals(t1) ? 0 : -1;
+            }
+        });
     }
 
     private static MethodSpec createAdapterMethod(TypeName targetClassName) {
