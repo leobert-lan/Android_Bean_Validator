@@ -28,5 +28,5 @@ ext {
     licenseUrl = 'https://mit-license.org/'
     allLicenses = ["MIT"]
 }
-//apply from: "../maven_publish.gradle"
+apply from: "../../maven_publish.gradle"
 apply from: "../../bintray_publish.gradle"
