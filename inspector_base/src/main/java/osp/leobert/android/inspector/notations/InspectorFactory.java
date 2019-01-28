@@ -10,7 +10,7 @@ import osp.leobert.android.inspector.validators.Validator;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-/**
+/*
  * Annotation to indicate that a given class should generate a concrete implementation of a
  * {@link Validator.Factory} that handles all the publicly denoted validator implementations of this
  * project.
@@ -27,7 +27,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface InspectorFactory {
-    /**
+    /*
      * @return an array of annotation types that should be included in this factory.
      */
     Class<? extends Annotation>[] include();

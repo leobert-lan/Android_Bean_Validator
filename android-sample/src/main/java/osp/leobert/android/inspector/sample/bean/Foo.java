@@ -6,7 +6,7 @@ import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.notations.GenerateValidator;
 import osp.leobert.android.inspector.validators.Validator;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.sample.bean </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> Foo </p>
@@ -37,7 +37,6 @@ public class Foo {
     }
 
     public static Validator<Foo> validator(Inspector inspector) {
-        return new Inspector.Builder().add(GenerateValidator.FACTORY)
-                .build().validator(Foo.class);
+        return inspector.validator(Foo.class);
     }
 }

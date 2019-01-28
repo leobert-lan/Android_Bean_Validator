@@ -9,7 +9,7 @@ import osp.leobert.android.inspector.ValidationException;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
-/**
+/*
  * A convenience {@link Validator} that can compose multiple validators.
  */
 public final class CompositeValidator<T> extends Validator<T> {

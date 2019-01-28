@@ -9,7 +9,7 @@ import java.util.Set;
 import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.ValidationException;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.validators </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> Validator </p>
@@ -17,7 +17,7 @@ import osp.leobert.android.inspector.ValidationException;
  * Created by leobert on 2018/9/12.
  */
 public abstract class Validator<T> {
-    /**
+    /*
      * Validates a given {@code t} instance
      *
      * @param t the instance
@@ -34,7 +34,7 @@ public abstract class Validator<T> {
         }
     }
 
-    /**
+    /*
      * @return a nullsafe validator that ignores null instances.
      */
     public Validator<T> nullSafe() {
@@ -55,7 +55,7 @@ public abstract class Validator<T> {
     }
 
     public interface Factory {
-        /**
+        /*
          * Attempts to create an adapter for {@code type} annotated with {@code annotations}. This
          * returns the adapter if one was created, or null if this factory isn't capable of creating
          * such an adapter.

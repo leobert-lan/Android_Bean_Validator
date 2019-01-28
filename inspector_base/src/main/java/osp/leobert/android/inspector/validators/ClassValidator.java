@@ -20,7 +20,7 @@ import osp.leobert.android.inspector.ValidationException;
 import osp.leobert.android.inspector.notations.InspectorIgnored;
 import osp.leobert.android.inspector.notations.ValidatedBy;
 
-/**
+/*
  * Emits a validator that validates validatable methods of a class.
  * <p>
  * <h3>Platform Types</h3>
@@ -75,7 +75,7 @@ public final class ClassValidator<T> extends Validator<T> {
             return new ClassValidator<>(classFactory, methods).nullSafe();
         }
 
-        /** Creates a method binding for each of declared method of {@code type}. */
+        /* Creates a method binding for each of declared method of {@code type}. */
 //        @SuppressWarnings("ClassNewInstance")
         private void createMethodBindings(Inspector inspector,
                                           Type type,
@@ -169,14 +169,14 @@ public final class ClassValidator<T> extends Validator<T> {
             }
         }
 
-        /** Returns true if methods with {@code modifiers} are included in the emitted validator. */
+        /* Returns true if methods with {@code modifiers} are included in the emitted validator. */
         private boolean includeMethod(boolean platformType, int modifiers) {
             return !Modifier.isStatic(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(
                     modifiers) || !platformType);
         }
     };
 
-    /**
+    /*
      * Returns true if {@code rawType} is built in. We don't reflect on private methods of platform
      * types because they're unspecified and likely to be different on Java vs. Android.
      */

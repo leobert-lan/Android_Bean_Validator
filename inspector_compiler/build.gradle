@@ -4,7 +4,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation deps.auto.service
 
-    api project(":inspector_base")
+//    api project(":inspector_base")
+    api "osp.leobert.android:inspector_base:0.0.1"
 }
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7

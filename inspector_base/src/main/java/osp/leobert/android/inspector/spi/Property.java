@@ -17,7 +17,7 @@ import javax.lang.model.type.TypeMirror;
 import osp.leobert.android.inspector.notations.InspectorIgnored;
 import osp.leobert.android.inspector.notations.ValidatedBy;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.spi </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> Property </p>

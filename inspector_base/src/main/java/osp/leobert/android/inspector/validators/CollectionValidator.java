@@ -12,7 +12,7 @@ import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.Types;
 import osp.leobert.android.inspector.ValidationException;
 
-/**
+/*
  * Validates collections.
  */
 public class CollectionValidator<C extends Collection<T>, T> extends Validator<C> {

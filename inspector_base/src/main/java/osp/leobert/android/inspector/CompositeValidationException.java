@@ -6,7 +6,7 @@ import osp.leobert.android.inspector.ValidationException;
 
 import static java.util.Collections.unmodifiableList;
 
-/**
+/*
  * A composite {@link ValidationException} that can hold and report multiple exceptions.
  */
 public class CompositeValidationException extends ValidationException {
@@ -18,7 +18,7 @@ public class CompositeValidationException extends ValidationException {
     this.exceptions = exceptions;
   }
 
-  /**
+  /*
    * @return the list of discovered exceptions.
    */
   public List<ValidationException> getExceptions() {

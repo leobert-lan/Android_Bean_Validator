@@ -24,7 +24,7 @@ import java.util.Set;
 
 import osp.leobert.android.inspector.notations.ValidationQualifier;
 
-/**
+/*
  * Factory methods for types.
  */
 public final class Types {
@@ -33,7 +33,7 @@ public final class Types {
     private Types() {
     }
 
-    /**
+    /*
      * Checks if {@code annotations} contains {@code validationQualifier}.
      * Returns the subset of {@code annotations} without {@code validationQualifier}, or null if {@code
      * annotations} does not contain {@code validationQualifier}.
@@ -58,7 +58,7 @@ public final class Types {
         return null;
     }
 
-    /**
+    /*
      * Returns a new parameterized type, applying {@code typeArguments} to {@code rawType}. Use this
      * method if {@code rawType} is not enclosed in another type.
      */
@@ -66,7 +66,7 @@ public final class Types {
         return new ParameterizedTypeImpl(null, rawType, typeArguments);
     }
 
-    /**
+    /*
      * Returns a new parameterized type, applying {@code typeArguments} to {@code rawType}. Use this
      * method if {@code rawType} is enclosed in {@code ownerType}.
      */
@@ -75,14 +75,14 @@ public final class Types {
         return new ParameterizedTypeImpl(ownerType, rawType, typeArguments);
     }
 
-    /**
+    /*
      * Returns an array type whose elements are all instances of {@code componentType}.
      */
     public static GenericArrayType arrayOf(Type componentType) {
         return new GenericArrayTypeImpl(componentType);
     }
 
-    /**
+    /*
      * Returns a type that represents an unknown type that extends {@code bound}. For example, if
      * {@code bound} is {@code CharSequence.class}, this returns {@code ? extends CharSequence}. If
      * {@code bound} is {@code Object.class}, this returns {@code ?}, which is shorthand for {@code
@@ -92,7 +92,7 @@ public final class Types {
         return new WildcardTypeImpl(new Type[]{bound}, EMPTY_TYPE_ARRAY);
     }
 
-    /**
+    /*
      * Returns a type that represents an unknown supertype of {@code bound}. For example, if {@code
      * bound} is {@code String.class}, this returns {@code ? super String}.
      */
@@ -100,7 +100,7 @@ public final class Types {
         return new WildcardTypeImpl(new Type[]{Object.class}, new Type[]{bound});
     }
 
-    /**
+    /*
      * Returns a type that is functionally equal but not necessarily equal according to {@link
      * Object#equals(Object) Object.equals()}.
      */
@@ -200,7 +200,7 @@ public final class Types {
         return a == b || (a != null && a.equals(b));
     }
 
-    /**
+    /*
      * Returns true if {@code a} and {@code b} are equal.
      */
     public static boolean equals(@Nullable Type a, @Nullable Type b) {
@@ -266,7 +266,7 @@ public final class Types {
         return type instanceof Class ? ((Class<?>) type).getName() : type.toString();
     }
 
-    /**
+    /*
      * Returns the generic supertype for {@code supertype}. For example, given a class {@code
      * IntegerSet}, the result for when supertype is {@code Set.class} is {@code Set<Integer>} and the
      * result when the supertype is {@code Collection.class} is {@code Collection<Integer>}.
@@ -305,7 +305,7 @@ public final class Types {
         return toResolve;
     }
 
-    /**
+    /*
      * Returns the generic form of {@code supertype}. For example, if this is {@code
      * ArrayList<String>}, this returns {@code Iterable<String>} given the input {@code
      * Iterable.class}.
@@ -323,7 +323,7 @@ public final class Types {
         return resolve(type, rawType, rawType.getGenericSuperclass());
     }
 
-    /**
+    /*
      * Returns the element type of {@code type} if it is an array type, or null if it is not an
      * array type.
      */
@@ -337,7 +337,7 @@ public final class Types {
         }
     }
 
-    /**
+    /*
      * Returns the element type of this collection type.
      *
      * @throws IllegalArgumentException if this type is not a collection.
@@ -354,7 +354,7 @@ public final class Types {
         return Object.class;
     }
 
-    /**
+    /*
      * Returns a two element array containing this map's key and value types in positions 0 and 1
      * respectively.
      */
@@ -456,7 +456,7 @@ public final class Types {
         return unknown;
     }
 
-    /**
+    /*
      * Returns true if this is a Type supported by {@link StandardValidators#FACTORY}.
      */
     public static boolean isAllowedPlatformType(Type type) {
@@ -479,7 +479,7 @@ public final class Types {
         throw new NoSuchElementException();
     }
 
-    /**
+    /*
      * Returns the declaring class of {@code typeVariable}, or {@code null} if it was not declared by
      * a class.
      */
@@ -594,7 +594,7 @@ public final class Types {
         }
     }
 
-    /**
+    /*
      * The WildcardType interface supports multiple upper bounds and multiple lower bounds. We only
      * support what the Java 6 language needs - at most one bound. If a lower bound is set, the upper
      * bound must be Object.class.

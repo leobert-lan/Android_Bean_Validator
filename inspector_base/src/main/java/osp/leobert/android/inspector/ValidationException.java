@@ -1,6 +1,6 @@
 package osp.leobert.android.inspector;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> ValidationException </p>

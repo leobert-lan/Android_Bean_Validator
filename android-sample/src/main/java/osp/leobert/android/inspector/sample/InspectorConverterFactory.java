@@ -10,7 +10,7 @@ import osp.leobert.android.inspector.ValidationException;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
-/**
+/*
  * An example implementation of a {@link Retrofit} {@link Converter.Factory} that delegates to a
  * later converter to create the response type, then validates it and throws it out if it fails
  * validation.
@@ -65,13 +65,13 @@ public final class InspectorConverterFactory extends Converter.Factory {
         }
     }
 
-    /**
+    /*
      * A callback to be notified on validation exceptions and potentially act on them. Use cases could
      * include logging, throwing, etc.
      */
     public interface ValidationExceptionCallback {
 
-        /**
+        /*
          * The callback method with the validation exception passed in.
          *
          * @param type      the original type that failed.

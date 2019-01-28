@@ -5,7 +5,7 @@ import android.support.annotation.StringDef;
 
 import osp.leobert.android.inspector.notations.GenerateValidator;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.sample.bean </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> Bar </p>

@@ -47,8 +47,8 @@ public final class Util {
         return false;
     }
 
-    /**
-     * Returns true if {@code annotations} has any annotation whose simple name is Nullable.
+    /*
+     * @return Returns true if {@code annotations} has any annotation whose simple name is Nullable.
      */
     public static boolean hasNullable(Annotation[] annotations) {
         for (Annotation annotation : annotations) {
@@ -59,8 +59,8 @@ public final class Util {
         return false;
     }
 
-    /**
-     * Returns true if {@code annotations} has any annotation whose simple name is Nullable.
+    /*
+     * @return Returns true if {@code annotations} has any annotation whose simple name is Nullable.
      */
     public static boolean hasNullable(Set<? extends Annotation> annotations) {
         for (Annotation annotation : annotations) {
@@ -71,10 +71,6 @@ public final class Util {
         return false;
     }
 
-    /**
-     * delimiter 分隔符
-     * elements 需要连接的字符数组
-     */
     public static String join(CharSequence delimiter, Collection<? extends CharSequence> elements) {
         // 空指针判断
         Objects.requireNonNull(delimiter);

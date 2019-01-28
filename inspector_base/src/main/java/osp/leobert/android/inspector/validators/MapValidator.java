@@ -11,7 +11,7 @@ import osp.leobert.android.inspector.Inspector;
 import osp.leobert.android.inspector.Types;
 import osp.leobert.android.inspector.ValidationException;
 
-/**
+/*
  * Validates maps.
  */
 public final class MapValidator<K, V> extends Validator<Map<K, V>> {

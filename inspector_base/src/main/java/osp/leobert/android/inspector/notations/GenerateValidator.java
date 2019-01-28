@@ -23,7 +23,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.synchronizedMap;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.notations </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> GenerateValidator </p>

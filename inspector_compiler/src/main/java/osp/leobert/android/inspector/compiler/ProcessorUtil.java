@@ -20,7 +20,7 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/**
+/*
  * <p><b>Package:</b> osp.leobert.android.inspector.compiler </p>
  * <p><b>Project:</b> Jsr380 </p>
  * <p><b>Classname:</b> ProcessorUtil </p>

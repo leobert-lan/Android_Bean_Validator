@@ -8,7 +8,7 @@ import java.util.Set;
 
 import osp.leobert.android.inspector.validators.Validator;
 
-/**
+/*
  * An interface that a given type can implement to let Inspector know that it validates itself.
  * <p>
  * <pre><code>
@@ -20,14 +20,14 @@ import osp.leobert.android.inspector.validators.Validator;
  * </code></pre>
  */
 public interface SelfValidating {
-    /**
+    /*
      * Validates this object with whatever custom validation implementation the user wants.
      *
      * @throws ValidationException upon invalidation
      */
     void validate(Inspector inspector) throws ValidationException;
 
-    /**
+    /*
      * A factory instance for this. This is not considered public API.
      */
     Validator.Factory FACTORY = new Validator.Factory() {

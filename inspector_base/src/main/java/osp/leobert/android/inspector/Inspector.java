@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import osp.leobert.android.inspector.notations.GenerateValidator;
 import osp.leobert.android.inspector.notations.ValidationQualifier;
 import osp.leobert.android.inspector.validators.Validator;
 
@@ -33,6 +34,21 @@ public final class Inspector {
         BUILT_IN_FACTORIES.add(ClassValidator.FACTORY);
     }
 
+    private static Inspector sDefaultInspector;
+
+    public static Inspector getDefault() {
+        if (sDefaultInspector == null) {
+            synchronized (Inspector.class) {
+                if (sDefaultInspector == null) {
+                    sDefaultInspector = new Inspector.Builder()
+                            .add(GenerateValidator.FACTORY)
+                            .build();
+                }
+            }
+        }
+        return sDefaultInspector;
+    }
+
     @SuppressWarnings("ThreadLocalUsage")
     private final ThreadLocal<List<DeferredAdapter<?>>> reentrantCalls = new ThreadLocal<>();
     private final List<Validator.Factory> factories;
@@ -46,14 +62,14 @@ public final class Inspector {
         this.factories = Collections.unmodifiableList(factories);
     }
 
-    /**
+    /*
      * Returns a Validator for {@code type}, creating it if necessary.
      */
     public <T> Validator<T> validator(Type type) {
         return validator(type, Util.NO_ANNOTATIONS);
     }
 
-    /**
+    /*
      * Returns a Validator for {@code type}, creating it if necessary.
      */
     public <T> Validator<T> validator(Class<T> type) {
@@ -61,7 +77,7 @@ public final class Inspector {
     }
 
 
-    /**
+    /*
      * Returns a Validator for {@code type} with {@code annotationType}, creating it if necessary.
      */
     public <T> Validator<T> validator(Type type, Class<? extends Annotation> annotationType) {
@@ -69,7 +85,7 @@ public final class Inspector {
                 Collections.singleton(Types.createValidationQualifierImplementation(annotationType)));
     }
 
-    /**
+    /*
      * Returns a Validator for {@code type} and {@code annotations}, creating it if necessary.
      */
     @SuppressWarnings("unchecked") // Factories are required to return only matching Validators.
@@ -125,7 +141,7 @@ public final class Inspector {
     }
 
 
-    /**
+    /*
      * Returns a Validator for {@code type} and {@code annotations}, always creating a new one and
      * skipping past {@code skipPast} for creation.
      */
@@ -150,7 +166,7 @@ public final class Inspector {
                 + annotations);
     }
 
-    /**
+    /*
      * Returns a new builder containing all custom factories used by the current instance.
      */
     public Inspector.Builder newBuilder() {
@@ -160,7 +176,7 @@ public final class Inspector {
         return new Builder().addAll(customFactories);
     }
 
-    /**
+    /*
      * Returns an opaque object that's equal if the type and annotations are equal.
      */
     private Object cacheKey(Type type, Set<? extends Annotation> annotations) {
@@ -232,7 +248,7 @@ public final class Inspector {
         }
     }
 
-    /**
+    /*
      * Sometimes a type adapter factory depends on its own product; either directly or indirectly.
      * To make this work, we offer this type adapter stub while the final adapter is being computed.
      * When it is ready, we wire this to delegate to that finished adapter.

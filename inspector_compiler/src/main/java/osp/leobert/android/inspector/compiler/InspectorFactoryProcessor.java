@@ -337,7 +337,7 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
                 "Could not inspect factory includes. Java annotation processing is weird.");
     }
 
-    /**
+    /*
      * Returns the name of the given type, including any enclosing types but not the package.
      */
     private static String classNameOf(TypeElement type) {
@@ -347,7 +347,7 @@ public final class InspectorFactoryProcessor extends AbstractProcessor {
         return pkgName.isEmpty() ? name : name.substring(pkgName.length() + 1);
     }
 
-    /**
+    /*
      * Returns the name of the package that the given type is in. If the type is in the default
      * (unnamed) package then the name is the empty string.
      */

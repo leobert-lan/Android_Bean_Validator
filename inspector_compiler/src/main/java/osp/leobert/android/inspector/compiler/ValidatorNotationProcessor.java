@@ -86,7 +86,7 @@ import static osp.leobert.android.inspector.compiler.ProcessorUtil.getAnnotation
 //import static java.util.stream.Collectors.toList;
 
 @AutoService(Processor.class)
-public class JSR380NotationProcessor extends AbstractProcessor {
+public class ValidatorNotationProcessor extends AbstractProcessor {
 
     // Depending on how this InspectorProcessor was constructed, we might already have a list of
     // extensions when init() is run, or, if `extensions` is null, we have a ClassLoader that will be
@@ -99,18 +99,18 @@ public class JSR380NotationProcessor extends AbstractProcessor {
     private Elements elements;
     private javax.lang.model.util.Types typeUtils;
 
-    public JSR380NotationProcessor() {
-        this(JSR380NotationProcessor.class.getClassLoader());
+    public ValidatorNotationProcessor() {
+        this(ValidatorNotationProcessor.class.getClassLoader());
     }
 
     @VisibleForTesting
-    JSR380NotationProcessor(ClassLoader loaderForExtensions) {
+    ValidatorNotationProcessor(ClassLoader loaderForExtensions) {
         this.extensions = null;
         this.loaderForExtensions = loaderForExtensions;
     }
 
     @VisibleForTesting
-    public JSR380NotationProcessor(Iterable<? extends InspectorExtension> extensions) {
+    public ValidatorNotationProcessor(Iterable<? extends InspectorExtension> extensions) {
         this.extensions = ImmutableSet.copyOf(extensions);
         this.loaderForExtensions = null;
     }
@@ -480,7 +480,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
         return classBuilder;
     }
 
-    /**
+    /*
      * Returns the contents of a {@code Class[]}-typed "value" field in a given {@code
      * annotationMirror}.
      */
@@ -652,6 +652,7 @@ public class JSR380NotationProcessor extends AbstractProcessor {
             if (entry.getValue()
                     .getReturnType() instanceof NoType) {
                 // Covers things like void types
+                // TODO: 2018/12/18 change logic for runtime setter checker
                 continue;
             }
             values.add(new Property(entry.getKey(), entry.getValue()));

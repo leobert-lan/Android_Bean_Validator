@@ -8,7 +8,7 @@ import osp.leobert.android.inspector.notations.GenerateValidator;
 import osp.leobert.android.inspector.validators.Validator;
 
 
-/**
+/*
  * <p><b>Package:</b> io.sweers.inspector.sample </p>
  * <p><b>Project:</b> inspector-root </p>
  * <p><b>Classname:</b> Demo </p>

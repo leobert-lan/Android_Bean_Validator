@@ -12,7 +12,7 @@ import osp.leobert.android.inspector.Types;
 import osp.leobert.android.inspector.ValidationException;
 
 
-/**
+/*
  * Validates arrays.
  */
 public final class ArrayValidator extends Validator<Object> {
