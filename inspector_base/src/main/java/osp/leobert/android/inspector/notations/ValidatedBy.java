@@ -1,12 +1,12 @@
 package osp.leobert.android.inspector.notations;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+        import java.lang.annotation.Retention;
+        import java.lang.annotation.Target;
 
-import osp.leobert.android.inspector.validators.Validator;
+        import osp.leobert.android.inspector.validators.Validator;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+        import static java.lang.annotation.ElementType.METHOD;
+        import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention(RUNTIME)
 @Target(METHOD)

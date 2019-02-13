@@ -4,6 +4,7 @@ dependencies {
     api deps.guava
     api deps.misc.javapoet
     api deps.misc.javaxExtras
+    testImplementation deps.junit
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_7
