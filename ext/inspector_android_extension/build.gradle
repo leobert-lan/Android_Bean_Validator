@@ -3,31 +3,31 @@ sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-//    api project(":inspector_base")
-    api "osp.leobert.android:inspector_base:0.0.1"
+    api project(":inspector_base")
+//    api "osp.leobert.android:inspector_base:0.0.1"
     api deps.auto.service
     api deps.misc.javapoet
     api deps.misc.javaxExtras
     api deps.guava
-    api deps.support.annotations
+    api 'androidx.annotation:annotation:1.2.0'
     api deps.auto.value
 }
 
-def MAVEN_LOCAL_PATH = uri('../../../local_repo')
-def ARTIFACT_ID = 'inspector_android_extension'
-def VERSION_NAME = '0.0.1'
-def GROUP_ID = 'osp.leoebrt.android'
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = ARTIFACT_ID
-    artifact = ARTIFACT_ID
-    libraryName = ARTIFACT_ID
-    libraryDescription = 'base lib for inspector'
-    libraryVersion = VERSION_NAME
-    licenseName = 'MIT'
-    licenseUrl = 'https://mit-license.org/'
-    allLicenses = ["MIT"]
-}
-apply from: "../../maven_publish.gradle"
-apply from: "../../bintray_publish.gradle"
+//def MAVEN_LOCAL_PATH = uri('../../../local_repo')
+//def ARTIFACT_ID = 'inspector_android_extension'
+//def VERSION_NAME = '0.0.1'
+//def GROUP_ID = 'osp.leoebrt.android'
+//
+//ext {
+//    bintrayRepo = 'maven'
+//    bintrayName = ARTIFACT_ID
+//    artifact = ARTIFACT_ID
+//    libraryName = ARTIFACT_ID
+//    libraryDescription = 'base lib for inspector'
+//    libraryVersion = VERSION_NAME
+//    licenseName = 'MIT'
+//    licenseUrl = 'https://mit-license.org/'
+//    allLicenses = ["MIT"]
+//}
+//apply from: "../../maven_publish.gradle"
+//apply from: "../../bintray_publish.gradle"

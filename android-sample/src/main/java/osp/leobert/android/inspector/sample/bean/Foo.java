@@ -1,6 +1,6 @@
 package osp.leobert.android.inspector.sample.bean;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 import android.util.Log;
 
 import java.util.Date;

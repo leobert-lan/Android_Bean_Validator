@@ -1,12 +1,12 @@
 package osp.leobert.android.inspector.extension.android;
 
-import android.support.annotation.FloatRange;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.LongDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Size;
-import android.support.annotation.StringDef;
+import androidx.annotation.FloatRange;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.LongDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Size;
+import androidx.annotation.StringDef;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;

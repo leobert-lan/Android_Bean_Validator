@@ -1,7 +1,7 @@
 package osp.leobert.android.inspector.sample.bean;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.StringDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringDef;
 
 import osp.leobert.android.inspector.notations.GenerateValidator;
 

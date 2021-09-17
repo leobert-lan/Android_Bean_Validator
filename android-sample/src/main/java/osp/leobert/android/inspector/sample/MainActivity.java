@@ -1,12 +1,11 @@
 package osp.leobert.android.inspector.sample;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
 import osp.leobert.android.inspector.Inspector;
-import osp.leobert.android.inspector.sample.bean.BarIValidator;
 import osp.leobert.android.inspector.sample.bean.Foo;
 import osp.leobert.android.inspector.validators.ClassValidator;
 import osp.leobert.android.inspector.validators.Validator;

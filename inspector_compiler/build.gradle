@@ -1,30 +1,30 @@
 apply plugin: 'java-library'
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation deps.auto.service
+    annotationProcessor deps.auto.service
 
-//    api project(":inspector_base")
-    api "osp.leobert.android:inspector_base:0.0.1"
+    api project(":inspector_base")
+//    api "osp.leobert.android:inspector_base:0.0.1"
 }
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
-def MAVEN_LOCAL_PATH = uri('../../local_repo')
-def ARTIFACT_ID = 'inspector_compiler'
-def VERSION_NAME = '0.0.1'
-def GROUP_ID = 'osp.leoebrt.android'
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = ARTIFACT_ID
-    artifact = ARTIFACT_ID
-    libraryName = ARTIFACT_ID
-    libraryDescription = 'compiler lib for inspector'
-    libraryVersion = VERSION_NAME
-    licenseName = 'MIT'
-    licenseUrl = 'https://mit-license.org/'
-    allLicenses = ["MIT"]
-}
-apply from: "../maven_publish.gradle"
-apply from: "../bintray_publish.gradle"
+//def MAVEN_LOCAL_PATH = uri('../../local_repo')
+//def ARTIFACT_ID = 'inspector_compiler'
+//def VERSION_NAME = '0.0.1'
+//def GROUP_ID = 'osp.leoebrt.android'
+//
+//ext {
+//    bintrayRepo = 'maven'
+//    bintrayName = ARTIFACT_ID
+//    artifact = ARTIFACT_ID
+//    libraryName = ARTIFACT_ID
+//    libraryDescription = 'compiler lib for inspector'
+//    libraryVersion = VERSION_NAME
+//    licenseName = 'MIT'
+//    licenseUrl = 'https://mit-license.org/'
+//    allLicenses = ["MIT"]
+//}
+//apply from: "../maven_publish.gradle"
+//apply from: "../bintray_publish.gradle"
