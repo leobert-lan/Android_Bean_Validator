@@ -1,8 +1,8 @@
 apply plugin: 'java-library'
 
 dependencies {
-    implementation deps.auto.service
-    annotationProcessor deps.auto.service
+    implementation "com.google.auto.service:auto-service:1.0-rc4"
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
 
     api project(":inspector_base")
 //    api "osp.leobert.android:inspector_base:0.0.1"
