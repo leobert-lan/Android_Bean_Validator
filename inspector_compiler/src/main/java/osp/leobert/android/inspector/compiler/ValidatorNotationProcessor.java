@@ -1,5 +1,11 @@
 package osp.leobert.android.inspector.compiler;
 
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
+import static osp.leobert.android.inspector.compiler.ProcessorUtil.getAnnotationValue;
+
 import com.google.auto.common.MoreTypes;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -70,12 +76,6 @@ import osp.leobert.android.inspector.spi.InspectorExtension;
 import osp.leobert.android.inspector.spi.Property;
 import osp.leobert.android.inspector.validators.CompositeValidator;
 import osp.leobert.android.inspector.validators.Validator;
-
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-import static osp.leobert.android.inspector.compiler.ProcessorUtil.getAnnotationValue;
 
 //import static com.google.auto.common.AnnotationMirrors.getAnnotationValue;
 //import static com.google.common.collect.ImmutableSet.toImmutableSet;
@@ -235,17 +235,19 @@ public class ValidatorNotationProcessor extends AbstractProcessor {
                 ParameterizedTypeName.get(ClassName.get(Validator.class), typeName);
         TypeName returnedValidator = null;
         for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
-            if (method.getModifiers()
-                    .contains(STATIC) && !method.getModifiers()
-                    .contains(PRIVATE)) {
+            if (method.getModifiers().contains(STATIC)
+                    && !method.getModifiers().contains(PRIVATE)) {
                 TypeMirror rType = method.getReturnType();
                 TypeName returnType = TypeName.get(rType);
                 if (returnType.equals(validatorType)) {
                     return checkSelfValidating(isSelfValidating, type);
                 }
 
-                if (returnType.equals(validatorType.rawType) || (returnType instanceof ParameterizedTypeName
-                        && ((ParameterizedTypeName) returnType).rawType.equals(validatorType.rawType))) {
+                if (returnType.equals(validatorType.rawType) ||
+                        (returnType instanceof ParameterizedTypeName &&
+                                ((ParameterizedTypeName) returnType).rawType.equals(validatorType.rawType)
+                        )
+                ) {
                     returnedValidator = returnType;
                 }
             }
@@ -294,9 +296,9 @@ public class ValidatorNotationProcessor extends AbstractProcessor {
     private Map<String, ExecutableElement> getProperties(TypeElement targetClass) {
         Map<String, ExecutableElement> elements = Maps.newLinkedHashMap();
         for (ExecutableElement method : ElementFilter.methodsIn(targetClass.getEnclosedElements())) {
-            if (!method.getModifiers()
-                    .contains(PRIVATE) && !method.getModifiers()
-                    .contains(STATIC) && method.getAnnotation(InspectorIgnored.class) == null) {
+            if (!method.getModifiers().contains(PRIVATE)
+                    && !method.getModifiers().contains(STATIC)
+                    && method.getAnnotation(InspectorIgnored.class) == null) {
                 elements.put(method.getSimpleName()
                         .toString(), method);
             }

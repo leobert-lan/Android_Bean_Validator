@@ -54,11 +54,9 @@ public final class AndroidInspectorExtension implements InspectorExtension {
                 return true;
             }
         }
-        if (!property.type.isPrimitive()
+        return !property.type.isPrimitive()
                 && !property.type.equals(TypeName.VOID.box())
-                && !property.annotations.contains("Nullable"))
-            return true;
-        return false;
+                && !property.annotations.contains("Nullable");
     }
 
     @Override
